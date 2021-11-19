@@ -3,9 +3,13 @@
 # Learn more about .gitignore:
 #     https://www.atlassian.com/git/tutorials/saving-changes/gitignore
 
+# config files
+config.inc
+
 # Node artifact files
 node_modules/
 dist/
+logs/
 
 # Compiled Java class files
 *.class
