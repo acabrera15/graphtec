@@ -10,6 +10,7 @@ config.inc
 node_modules/
 dist/
 logs/
+tmp/
 
 # Compiled Java class files
 *.class
@@ -25,7 +26,6 @@ logs/
 
 # Maven
 target/
-dist/
 
 # JetBrains IDE
 .idea/

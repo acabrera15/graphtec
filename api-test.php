@@ -15,12 +15,12 @@ $api_client = new BigCommerceRestApiClient($config, 'orders');
 
 // yesterday
 $date = new DateTime();
-$date->sub(date_interval_create_from_date_string('1 day'));
+$date->sub(date_interval_create_from_date_string('2 hour'));
 
 
 $response = $api_client->get(['min_date_modified' => $date->format('c')
 ]);
 $orders_arr = json_decode($response->body, true);
 
-echo "\n\nWe have had " . count($orders_arr) . " orders in the past 24 hours\n\n";
+echo "\n\nWe have had " . count($orders_arr) . " orders in the past 2 hours\n\n";
 
