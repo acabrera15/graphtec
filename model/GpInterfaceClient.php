@@ -85,19 +85,28 @@ class GpInterfaceClient {
         return $return_arr;
     }
 
-    public function submit_order(Order $order): bool {
+    /**
+     * throws an Exception if there was an error submitting the order
+     * @param Order $order
+     * @return void
+     * @throws Exception
+     */
+    public function submit_order(Order $order): void {
 
-        // TODO: implement the actual logic to submit orders; for now, just spoof a response
-        if (time() % 5 === 0){
-            $this->message = 'Error submitting order: Fake error message that appears one out of five times';
-            $this->write_to_log(self::LOG, $this->message);
+        $customer_translator = new CustomerGPCustomerTranslator($order->customer);
+        $customer_data = [
+            'AUTHENTICATION' => $this->authentication_array(),
+            'CUSTOMER' => $customer_translator->translate()
+        ];
 
-            return false;
-        } else {
-            $this->message = 'Submitted order successfully';
+        $order_translator = new OrderGPOrderTranslator($order);
+        $order_data = [
+            'AUTHENTICATION' => $this->authentication_array(),
+            'SALESORDER' => $order_translator->translate()
+        ];
 
-            return true;
-        }
+        $result = $this->soap_call('getInventory', $customer_data, 'custXMLStr', $order_data, 'soXMLStr');
+        $this->check_response_for_errors($result);
     }
     // end public functions
 
@@ -161,8 +170,18 @@ class GpInterfaceClient {
         }
     }
 
-    private function soap_call(string $method, array $data): SimpleXMLElement {
-        $response_obj = $this->client->{$method}(['XMLStr' => $this->array_to_xml_string($data, 'REQUEST')]);
+    private function soap_call(
+        string $method,
+        array $data,
+        string $xml_key1 = 'XMLStr',
+        array $data2 = null,
+        string $xml_key2 = null
+    ): SimpleXMLElement {
+        $xml_arr = [$xml_key1 => $this->array_to_xml_string($data, 'REQUEST')];
+        if (!empty($xml_key2) && is_array($data2)){
+            $xml_arr[$xml_key2] = $this->array_to_xml_string($data2);
+        }
+        $response_obj = $this->client->{$method}($xml_arr);
 
         return simplexml_load_string($response_obj->{$method . 'Result'});
     }

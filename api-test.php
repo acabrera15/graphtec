@@ -7,12 +7,21 @@ $config->client_id = BIGCOMMERCE_API_CLIENT_ID;
 $config->client_secret = BIGCOMMERCE_API_CLIENT_SECRET;
 $config->endpoint = BIGCOMMERCE_V3_API_ENDPOINT;
 
-$api_client = new BigCommerceRestApiClient($config, 'catalog/products');
-print_r($api_client->get([])->body);
+/*$api_client = new BigCommerceRestApiClient($config, 'catalog/products');
+print_r($api_client->get([])->body);*/
 
 $config->endpoint = BIGCOMMERCE_V2_API_ENDPOINT;
-$api_client = new BigCommerceRestApiClient($config, 'orders');
+//$api_client = new BigCommerceRestApiClient($config, 'orders/21551');
+//print_r($api_client->get([]));
 
+$api_client = new BigCommerceRestApiClient($config, 'hooks');
+print_r($api_client->post([
+    'scope' => 'store/order/created',
+    'destination' => 'https://www.graphtecamericapro.com/bigcommerce-integrations/webhooks/bc-order-created.php',
+    'is_active' => true
+]));
+
+/*
 // yesterday
 $date = new DateTime();
 $date->sub(date_interval_create_from_date_string('2 hour'));
@@ -23,4 +32,5 @@ $response = $api_client->get(['min_date_modified' => $date->format('c')
 $orders_arr = json_decode($response->body, true);
 
 echo "\n\nWe have had " . count($orders_arr) . " orders in the past 2 hours\n\n";
+*/
 
