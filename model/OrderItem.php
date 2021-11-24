@@ -1,4 +1,7 @@
 <?php
 class OrderItem {
-    // TODO: implement OrderItem class
+    public int      $backorder_quantity = 0;
+    public ?string  $sku = null;
+    public int      $quantity = 1;
+    public float    $unit_price = 0.00;
 }

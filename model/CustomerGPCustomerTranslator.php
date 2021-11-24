@@ -48,11 +48,29 @@ class CustomerGPCustomerTranslator {
     // private functions
     private function add_addresses(): void {
         foreach ($this->customer->addresses as $address){
-            $id = $address->id === $this->customer->primary_address_id ? 'PRIMARY' : $address->id;
 
-            $this->gp_customer['ADDRESSES'][] = [
+            // add an extra entry if it's the primary
+            if ($this->customer->primary_address_id === $address->id){
+                $this->gp_customer['ADDRESSES'][] = ['ADDRESS' => [
+                    'GPCUSTID' => $this->gp_customer['GPCUSTID'],
+                    'ADDRID' => 'PRIMARY',
+                    'ADDRTYPE' => $address->type,
+                    'CONTACT' => $address->contact,
+                    'ADDR1' => $address->address1,
+                    'ADDR2' => $address->address2,
+                    'ADDR3' => $address->address3,
+                    'CITY' => $address->city,
+                    'STATE' => $address->state,
+                    'ZIP' => $address->zip,
+                    'COUNTRY' => $address->country,
+                    'PHONE1' => $address->phone1,
+                    'PHONE2' => $address->phone2
+                ]];
+            }
+
+            $this->gp_customer['ADDRESSES'][] = ['ADDRESS' => [
                 'GPCUSTID' => $this->gp_customer['GPCUSTID'],
-                'ADDRID' => $id,
+                'ADDRID' => $address->id,
                 'ADDRTYPE' => $address->type,
                 'CONTACT' => $address->contact,
                 'ADDR1' => $address->address1,
@@ -64,7 +82,7 @@ class CustomerGPCustomerTranslator {
                 'COUNTRY' => $address->country,
                 'PHONE1' => $address->phone1,
                 'PHONE2' => $address->phone2
-            ];
+            ]];
         }
     }
 

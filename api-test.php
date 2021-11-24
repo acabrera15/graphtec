@@ -11,15 +11,26 @@ $config->endpoint = BIGCOMMERCE_V3_API_ENDPOINT;
 print_r($api_client->get([])->body);*/
 
 $config->endpoint = BIGCOMMERCE_V2_API_ENDPOINT;
-//$api_client = new BigCommerceRestApiClient($config, 'orders/21551');
-//print_r($api_client->get([]));
+$api_client = new BigCommerceRestApiClient($config, 'orders/21549');
+print_r($api_client->get([]));
+exit();
 
-$api_client = new BigCommerceRestApiClient($config, 'hooks');
-print_r($api_client->post([
-    'scope' => 'store/order/created',
-    'destination' => 'https://www.graphtecamericapro.com/bigcommerce-integrations/webhooks/bc-order-created.php',
-    'is_active' => true
-]));
+$api_client = new BigCommerceRestApiClient($config, 'shipping/zones');
+$zones_response = $api_client->get([]);
+$zones_arr = json_decode($zones_response->body);
+$shipping_methods = [];
+foreach ($zones_arr as $zone){
+    $api_client = new BigCommerceRestApiClient($config, 'shipping/zones/' . $zone->id . '/methods');
+    $methods_response = $api_client->get([]);
+    $methods_arr = json_decode($methods_response->body);
+    foreach ($methods_arr as $method){
+        if (!isset($shipping_methods[$method->type])){
+            $shipping_methods[$method->type] = $method;
+        }
+    }
+}
+
+print_r($shipping_methods);
 
 /*
 // yesterday

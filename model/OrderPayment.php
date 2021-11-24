@@ -1,4 +1,6 @@
 <?php
 class OrderPayment {
-    // TODO: implement OrderPayment class
+    public float        $amount = 0.00;
+    public CreditCard   $card;
+    public ?string      $transaction_id = null;
 }
