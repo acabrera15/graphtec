@@ -1,4 +1,7 @@
 <?php
+
+use JetBrains\PhpStorm\ArrayShape;
+
 class GpInterfaceClient {
 
     use Logger;
@@ -16,15 +19,15 @@ class GpInterfaceClient {
     // end private members
 
     // public functions
+    public function get_config(): SoapCredentialsConfig { return $this->config; }
+    public function get_message(): string { return $this->message; }
+
     /**
      * @throws SoapFault
      */
     public function __construct(SoapCredentialsConfig $config){
         $this->config = $config;
-        $this->client = new SoapClient(
-            $this->config->endpoint,
-            ['connection_timeout' => 10, 'exceptions' => 1, 'trace' => 1, 'verify_peer' => false]
-        );
+        $this->init_client();
     }
 
     /**
@@ -68,7 +71,6 @@ class GpInterfaceClient {
         $this->message = 'Inventory queried successfully';
 
         // DELETE THIS TO GO LIVE
-        print_r($return_arr);
         $return_arr = [];
 
         $item1 = new InventoryItem();
@@ -83,6 +85,30 @@ class GpInterfaceClient {
         // END DELETE THIS TO GO LIVE
 
         return $return_arr;
+    }
+
+    /**
+     * @throws SoapFault
+     */
+    public function refresh_client(): void {
+        $this->init_client();
+    }
+
+    /**
+     * @param Customer $customer
+     * @throws Exception
+     */
+    public function submit_customer(Customer $customer): void {
+        $customer_translator = new CustomerGPCustomerTranslator($customer);
+        $customer_data = [
+            'AUTHENTICATION' => $this->authentication_array(),
+            'CUSTOMER' => $customer_translator->translate()
+        ];
+
+        $result = $this->soap_call('ImportCustomer', $customer_data);
+        $this->check_response_for_errors($result);
+
+        $this->message = 'Customer interfaced successfully';
     }
 
     /**
@@ -105,8 +131,10 @@ class GpInterfaceClient {
             'SALESORDER' => $order_translator->translate()
         ];
 
-        $result = $this->soap_call('getInventory', $customer_data, 'custXMLStr', $order_data, 'soXMLStr');
+        $result = $this->soap_call('ImportCustomerAndSalesOrder', $customer_data, 'custXMLStr', $order_data, 'soXMLStr');
         $this->check_response_for_errors($result);
+
+        $this->message = 'Order interfaced successfully';
     }
     // end public functions
 
@@ -140,6 +168,7 @@ class GpInterfaceClient {
         return $xml->asXML();
     }
 
+    #[ArrayShape(['USERCREDENTIAL' => "array"])]
     private function authentication_array(): array {
         return [
             'USERCREDENTIAL' => [
@@ -161,13 +190,23 @@ class GpInterfaceClient {
         ){
             $msg = '';
             if (!empty($result->NOTIFICATIONS->MESSAGES)){
-                foreach ($result->NOTIFICATIONS->MESSAGES as $message){
+                foreach ($result->NOTIFICATIONS->MESSAGES->MESSAGE as $message){
                     $msg .= "{$message}\n";
                 }
             }
 
             throw new Exception("SEVERITY: {$result->NOTIFICATIONS->SEVERITY}\nMessages: {$msg}");
         }
+    }
+
+    /**
+     * @throws SoapFault
+     */
+    private function init_client(): void {
+        $this->client = new SoapClient(
+            $this->config->endpoint,
+            ['connection_timeout' => 10, 'exceptions' => 1, 'trace' => 1, 'verify_peer' => false]
+        );
     }
 
     private function soap_call(
@@ -179,7 +218,8 @@ class GpInterfaceClient {
     ): SimpleXMLElement {
         $xml_arr = [$xml_key1 => $this->array_to_xml_string($data, 'REQUEST')];
         if (!empty($xml_key2) && is_array($data2)){
-            $xml_arr[$xml_key2] = $this->array_to_xml_string($data2);
+            $xml_arr[$xml_key2] = $this->array_to_xml_string($data2, 'REQUEST');
+            print_r($xml_arr);
         }
         $response_obj = $this->client->{$method}($xml_arr);
 

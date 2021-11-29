@@ -3,5 +3,7 @@ require_once('config.inc');
 
 // auto-loader
 spl_autoload_register(function ($class_name) {
-    require_once(dirname(__FILE__) . '/model/' . $class_name . '.php');
+    if (file_exists(dirname(__FILE__) . '/model/' . $class_name . '.php')){
+        require_once(dirname(__FILE__) . '/model/' . $class_name . '.php');
+    }
 });

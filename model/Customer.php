@@ -24,37 +24,42 @@ class Customer {
     public ?string      $name = null;
     public string       $payment_term = self::DEFAULT_PAYMENT_TERM;
     public string       $price_level = self::DEFAULT_PRICE_LEVEL;
-    public string       $primary_address_id = "PRIMARY";
     public string       $salesperson_id = self::DEFAULT_SALESPERSON_ID;
     // end public members
 
     // public functions
-    public function default_bill_to_address_id(): ?string {
-        $id = null;
+    public function default_bill_to_address(): ?Address {
         foreach ($this->addresses as $address){
             if ($address->is_default_billing){
-                $id = $address->id;
-                break;
+                return $address;
             }
         }
+        if (empty($id) && !empty($this->addresses)){
+            return $this->addresses[0];
+        }
 
-        return $id;
+        return null;
     }
 
-    public function default_ship_to_address_id(): ?string {
-        $id = null;
+    public function default_ship_to_address(): ?Address {
         foreach ($this->addresses as $address){
             if ($address->is_default_shipping){
-                $id = $address->id;
-                break;
+                return $address;
             }
         }
+        if (empty($id) && !empty($this->addresses)){
+            return $this->addresses[0];
+        }
 
-        return $id;
+        return null;
     }
 
-    public function default_statement_address_id(): ?string {
-        return $this->default_bill_to_address_id();
+    public function default_statement_address(): ?Address {
+        return $this->default_bill_to_address();
+    }
+
+    public function primary_address(): ?Address {
+        return $this->default_ship_to_address();
     }
     // end public functions
 

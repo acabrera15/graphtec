@@ -25,10 +25,10 @@ class CustomerGPCustomerTranslator {
         $this->gp_customer['NAME'] = $this->customer->name;
         $this->gp_customer['CUSTCLASS'] = $this->customer->class;
         $this->gp_customer['PRCLEVEL'] = $this->customer->price_level;
-        $this->gp_customer['PRADDRID'] = $this->customer->primary_address_id;
-        $this->gp_customer['BILLTOADDRID'] = $this->customer->default_bill_to_address_id();
-        $this->gp_customer['SHIPTOADDRID'] = $this->customer->default_ship_to_address_id();
-        $this->gp_customer['STMNADDRID'] = $this->customer->default_statement_address_id();
+        $this->gp_customer['PRADDRID'] = !empty($this->customer->primary_address()) ? $this->customer->primary_address()->id : '0';
+        $this->gp_customer['BILLTOADDRID'] = !empty($this->customer->primary_address()) ? $this->customer->default_bill_to_address()->id : '0';
+        $this->gp_customer['SHIPTOADDRID'] = !empty($this->customer->default_ship_to_address()) ? $this->customer->default_ship_to_address()->id : '0';
+        $this->gp_customer['STMNADDRID'] = !empty($this->customer->default_statement_address()) ? $this->customer->default_statement_address()->id : '0';
         $this->gp_customer['PAYTERM'] = $this->customer->payment_term;
         $this->gp_customer['DATEJOINED'] = !empty($this->customer->date_joined) ? $this->customer->date_joined->format('m/d/Y') : date('m/d/Y');
         $this->gp_customer['SLSPRSID'] = $this->customer->salesperson_id;
@@ -50,7 +50,7 @@ class CustomerGPCustomerTranslator {
         foreach ($this->customer->addresses as $address){
 
             // add an extra entry if it's the primary
-            if ($this->customer->primary_address_id === $address->id){
+            if ($this->customer->primary_address()->id === $address->id){
                 $this->gp_customer['ADDRESSES'][] = ['ADDRESS' => [
                     'GPCUSTID' => $this->gp_customer['GPCUSTID'],
                     'ADDRID' => 'PRIMARY',
@@ -88,7 +88,7 @@ class CustomerGPCustomerTranslator {
 
     private function add_credit_cards(): void {
         foreach ($this->customer->credit_cards as $card){
-            $this->gp_customer['CREDITCARDS'][] = [
+            $this->gp_customer['CREDITCARDS'][] = [ 'CREDITCARD' => [
                 'DEFAULT' => $card->is_default ? 'true' : 'false',
                 'GPCARDNAME' => $card->type,
                 'CUSTCARDID' => $card->id,
@@ -98,7 +98,7 @@ class CustomerGPCustomerTranslator {
                 'EXPYEAR' => $card->exp_year,
                 'CSC' => $card->cvv,
                 'CARDTYPE' => $card->type
-            ];
+            ]];
         }
     }
     // end private functions

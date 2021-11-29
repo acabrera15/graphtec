@@ -1,6 +1,8 @@
 <?php
 class OrderGPOrderTranslator {
 
+    use CurrencyFormatter;
+
     // private constants
     private const BATCH_PREFIX = 'WEB-R-';
     private const CARD_TYPE_AMEX = 'AMEX';
@@ -36,12 +38,12 @@ class OrderGPOrderTranslator {
         $this->gp_order['BATCHID'] = $this->batch_id();
         $this->gp_order['GPCUSTID'] = $this->gp_customer['GPCUSTID'];
         $this->gp_order['ORDDATE'] = !empty($this->order->date) ? $this->order->date->format('m/d/Y') : date('m/d/Y');
-        $this->gp_order['SUBTOTAL'] = $this->order->subtotal;
-        $this->gp_order['SLSAMNT'] = $this->order->sales_amount;
-        $this->gp_order['AMNTRCVD'] = $this->order->amount_received;
-        $this->gp_order['DISCAMNT'] = $this->order->discount_amount;
-        $this->gp_order['SLSTAXAMNT'] = $this->order->sales_tax_amount;
-        $this->gp_order['FREIGHTAMNT'] = $this->order->freight_amount;
+        $this->gp_order['SUBTOTAL'] = $this->format_currency_value($this->order->subtotal(), $this->order->currency_code);
+        $this->gp_order['SLSAMNT'] = $this->format_currency_value($this->order->total_sales_amount(), $this->order->currency_code);
+        $this->gp_order['AMNTRCVD'] = $this->format_currency_value($this->order->total_paid(), $this->order->currency_code);
+        $this->gp_order['DISCAMNT'] = $this->format_currency_value($this->order->discount_amount, $this->order->currency_code);
+        $this->gp_order['SLSTAXAMNT'] = $this->format_currency_value($this->order->sales_tax_amount, $this->order->currency_code);
+        $this->gp_order['FREIGHTAMNT'] = $this->format_currency_value($this->order->freight_amount, $this->order->currency_code);
         $this->gp_order['TAXSCHD'] = $this->order->sales_tax_amount > 0.00001 ? self::SALES_TAX_SCHD : '';
         $this->gp_order['CUSTCLASS'] = $this->gp_customer['CUSTCLASS'];
         $this->gp_order['ORDTYPE'] = self::DEFAULT_ORDER_TYPE;
@@ -58,9 +60,10 @@ class OrderGPOrderTranslator {
         $this->gp_order['SITEID'] = $this->order->site_id;
         $this->gp_order['USERID'] = $this->gp_customer['USERID'];
         $this->gp_order['DETAILS'] = [];
+        $this->gp_order['PAYMENT'] = [];
 
         $this->add_details();
-        $this->add_payment();
+        $this->add_payments();
 
         return $this->gp_order;
     }
@@ -72,44 +75,30 @@ class OrderGPOrderTranslator {
             $this->gp_order['DETAILS'][] = ['DETAIL' => [
                 'ORDNO' => $this->gp_order['ORDNO'],
                 'ITMNO' => $item->sku,
-                'UNITPRC' => $item->unit_price,
+                'UNITPRC' => $this->format_currency_value($item->unit_price, $this->order->currency_code),
                 'QTY' => $item->quantity,
                 'BAKORDQTY' => $item->backorder_quantity,
-                'EXTPRC' => $item->unit_price * $item->quantity
+                'EXTPRC' => $this->format_currency_value($item->unit_price * $item->quantity, $this->order->currency_code)
             ]];
         }
     }
 
-    private function add_payment(): void {
+    private function add_payments(): void {
 
-        if (!empty($this->order->payment->card)){
-            $this->gp_order['PAYMENT'] = [
+        foreach ($this->order->payments as $payment){
+            $this->gp_order['PAYMENT'][] = [
                 'PAYTYPE' => 'Credit Card',
-                'GPCARDNAME' => $this->order->payment->card->type,
-                'CARDNAME' => $this->order->payment->card->name_on_card,
-                'CARDNO' => $this->order->payment->card->number,
-                'EXPMONTH' => $this->order->payment->card->exp_month,
-                'EXPYEAR' => $this->order->payment->card->exp_year,
-                'CSC' => $this->order->payment->card->cvv,
+                'GPCARDNAME' => $payment->card->type,
+                'CARDNAME' => $payment->card->name_on_card,
+                'CARDNO' => $payment->card->number,
+                'EXPMONTH' => $payment->card->exp_month,
+                'EXPYEAR' => $payment->card->exp_year,
+                'CSC' => $payment->card->cvv,
                 'CARDTYPE' => $this->translated_card_type(),
-                'PAYAUTHCODE' => $this->order->payment->transaction_id,
-                'AMNTPAID' => $this->order->payment->amount
-            ];
-        } else {
-            $this->gp_order['PAYMENT'] = [
-                'PAYTYPE' => 'Credit Card',
-                'GPCARDNAME' => '',
-                'CARDNAME' => '',
-                'CARDNO' => '',
-                'EXPMONTH' => '',
-                'EXPYEAR' => '',
-                'CSC' => '',
-                'CARDTYPE' => '',
-                'PAYAUTHCODE' => $this->order->payment->transaction_id,
-                'AMNTPAID' => $this->order->payment->amount
+                'PAYAUTHCODE' => $payment->transaction_id,
+                'AMNTPAID' => $this->format_currency_value($payment->amount, $this->order->currency_code)
             ];
         }
-
     }
 
     private function batch_id(): string {
@@ -119,7 +108,7 @@ class OrderGPOrderTranslator {
     }
 
     private function notes(): string {
-        $notes = $this->order->notes;
+        $notes = (string) $this->order->notes;
         if ($this->order->ship_method === self::SHIP_METHOD_UPS_READY){
             $notes .= "2nd-day air chosen\n\n";
         }

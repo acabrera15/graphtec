@@ -1,14 +1,18 @@
 <?php
+
+use JetBrains\PhpStorm\Pure;
+
 class Order {
 
     // private constants
+    private const DEFAULT_CURRENCY_CODE = 'USD';
     private const DEFAULT_SHIP_METHOD = 'ups';
     private const DEFAULT_SITE_ID = 'IRVINE';
     // end private constants
 
     // public members
-    public float        $amount_received = 0.00;
     public ?Address     $billing_address = null;
+    public string       $currency_code = self::DEFAULT_CURRENCY_CODE;
     public Customer     $customer;
     public ?DateTime    $date = null;
     public float        $discount_amount = 0.00;
@@ -19,20 +23,45 @@ class Order {
      */
     public array        $items = [];
     public ?string      $notes = null;
-    public OrderPayment $payment;
+    /**
+     * @var OrderPayment[]
+     */
+    public array        $payments = [];
     public ?string      $promo_code = null;
-    public float        $sales_amount = 0.00;
     public float        $sales_tax_amount = 0.00;
     public string       $ship_method = self::DEFAULT_SHIP_METHOD;
     public ?Address     $shipping_address = null;
     public string       $site_id = self::DEFAULT_SITE_ID;
-    public float        $subtotal = 0.00;
     // end public members
 
     // public functions
+    #[Pure]
     public function __construct(){
         $this->customer = new Customer();
-        $this->payment = new OrderPayment();
+        $this->payments = [];
     }
+
+    public function subtotal(): float {
+        $subtotal = 0.0;
+        foreach ($this->items as $item){
+            $subtotal += $item->extended_price();
+        }
+
+        return $subtotal;
+    }
+
+    public function total_paid(): float {
+        $total = 0.00;
+        foreach ($this->payments as $payment){
+            $total += $payment->amount;
+        }
+
+        return $total;
+    }
+
+    public function total_sales_amount(): float {
+        return $this->subtotal() + $this->freight_amount + $this->sales_tax_amount - $this->discount_amount;
+    }
+
     // end public functions
 }
