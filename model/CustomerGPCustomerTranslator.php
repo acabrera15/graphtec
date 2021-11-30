@@ -3,6 +3,7 @@ class CustomerGPCustomerTranslator {
 
     // private constants
     private const CUST_ID_PREFIX = 'ECOM';
+    private const DEFAULT_SHIP_METHOD = 'BEST/PPA';
     private const GUEST_ID_PREFIX = 'GUEST-';
     // end private constants
 
@@ -25,7 +26,7 @@ class CustomerGPCustomerTranslator {
         $this->gp_customer['NAME'] = $this->customer->name;
         $this->gp_customer['CUSTCLASS'] = $this->customer->class;
         $this->gp_customer['PRCLEVEL'] = $this->customer->price_level;
-        $this->gp_customer['PRADDRID'] = !empty($this->customer->primary_address()) ? $this->customer->primary_address()->id : '0';
+        $this->gp_customer['PRADDRID'] = 'PRIMARY';
         $this->gp_customer['BILLTOADDRID'] = !empty($this->customer->primary_address()) ? $this->customer->default_bill_to_address()->id : '0';
         $this->gp_customer['SHIPTOADDRID'] = !empty($this->customer->default_ship_to_address()) ? $this->customer->default_ship_to_address()->id : '0';
         $this->gp_customer['STMNADDRID'] = !empty($this->customer->default_statement_address()) ? $this->customer->default_statement_address()->id : '0';
@@ -64,7 +65,11 @@ class CustomerGPCustomerTranslator {
                     'ZIP' => $address->zip,
                     'COUNTRY' => $address->country,
                     'PHONE1' => $address->phone1,
-                    'PHONE2' => $address->phone2
+                    'PHONE2' => $address->phone2,
+                    'PHONE3' => $address->phone3,
+                    'FAX' => $address->fax,
+                    'SHIPMTHD' => self::DEFAULT_SHIP_METHOD
+
                 ]];
             }
 
@@ -81,7 +86,10 @@ class CustomerGPCustomerTranslator {
                 'ZIP' => $address->zip,
                 'COUNTRY' => $address->country,
                 'PHONE1' => $address->phone1,
-                'PHONE2' => $address->phone2
+                'PHONE2' => $address->phone2,
+                'PHONE3' => $address->phone3,
+                'FAX' => $address->fax,
+                'SHIPMTHD' => self::DEFAULT_SHIP_METHOD
             ]];
         }
     }

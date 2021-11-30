@@ -219,8 +219,8 @@ class GpInterfaceClient {
         $xml_arr = [$xml_key1 => $this->array_to_xml_string($data, 'REQUEST')];
         if (!empty($xml_key2) && is_array($data2)){
             $xml_arr[$xml_key2] = $this->array_to_xml_string($data2, 'REQUEST');
-            print_r($xml_arr);
         }
+        print_r($xml_arr);
         $response_obj = $this->client->{$method}($xml_arr);
 
         return simplexml_load_string($response_obj->{$method . 'Result'});

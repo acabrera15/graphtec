@@ -68,7 +68,7 @@ class GpInterfaceClientTest extends Testcase {
      * @dataProvider data_provider_submit_order
      * @throws SoapFault
      */
-    public function test_submit_order(Order $order, bool $should_succeed){
+   /* public function test_submit_order(Order $order, bool $should_succeed){
         $this->gp_client->get_config()->endpoint = GP_ENDPOINT_ORDER;
         $this->gp_client->refresh_client();
         if (!$should_succeed){
@@ -76,7 +76,7 @@ class GpInterfaceClientTest extends Testcase {
         }
         $this->gp_client->submit_order($order);
         static::assertTrue(true);
-    }
+    }*/
 
     // data providers
     public function data_provider_query_inventory(): array {
@@ -190,7 +190,7 @@ class GpInterfaceClientTest extends Testcase {
             $card::TYPE_MASTERCARD,
             $card::TYPE_VISA
         ];
-        $card->cvv = '****';
+        $card->cvv = '9999';
         $card->exp_month = date('m');
         $card->exp_year = (int) date('Y') + 4;
         $card->id = rand(10000, 10000000);

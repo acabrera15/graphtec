@@ -12,11 +12,13 @@ class Address {
     public ?string  $city = null;
     public ?string  $contact = null;
     public ?string  $country = null;
+    public ?string  $fax = null;
     public ?string  $id = null;
     public bool     $is_default_billing = false;
     public bool     $is_default_shipping = false;
     public ?string  $phone1 = null;
     public ?string  $phone2 = null;
+    public ?string  $phone3 = null;
     public ?string  $state = null;
     public string   $type = self::DEFAULT_TYPE;
     public ?string  $zip = null;
