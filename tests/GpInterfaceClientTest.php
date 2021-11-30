@@ -14,7 +14,7 @@ class GpInterfaceClientTest extends Testcase {
         'SILH-BLADE-PREM' => 19.99,
         'SILH-BLADE-DEEP' => 19.99,
         'CUT-MAT-12-3T' => 14.99,
-        'CUT-MAT-12LT-3T' => 14.99
+        //'CUT-MAT-12LT-3T' => 14.99
     ];
     // end private constants
 
@@ -60,6 +60,8 @@ class GpInterfaceClientTest extends Testcase {
             $this->expectException(Exception::class);
         }
         $this->gp_client->submit_customer($customer);
+        
+        static::assertTrue(true);
     }
 
     /**
@@ -68,7 +70,7 @@ class GpInterfaceClientTest extends Testcase {
      * @dataProvider data_provider_submit_order
      * @throws SoapFault
      */
-   /* public function test_submit_order(Order $order, bool $should_succeed){
+    public function test_submit_order(Order $order, bool $should_succeed){
         $this->gp_client->get_config()->endpoint = GP_ENDPOINT_ORDER;
         $this->gp_client->refresh_client();
         if (!$should_succeed){
@@ -76,7 +78,7 @@ class GpInterfaceClientTest extends Testcase {
         }
         $this->gp_client->submit_order($order);
         static::assertTrue(true);
-    }*/
+    }
 
     // data providers
     public function data_provider_query_inventory(): array {
@@ -207,12 +209,14 @@ class GpInterfaceClientTest extends Testcase {
         $customer->addresses[] = $this->valid_address(true, false);
         $customer->addresses[] = $this->valid_address(false, true);
         $customer->addresses[] = $this->valid_address(false, false);
+        $customer->class = 'CONSUMER';
         $customer->credit_cards[] = $this->valid_credit_card(true);
         $customer->credit_cards[] = $this->valid_credit_card(false);
         $customer->date_joined = new DateTime();
         $customer->email = 'test-' . time() . '@silhouetteamerica.com';
         $customer->id = rand(10000, 10000000);
         $customer->name = 'Testman Testerson ' . time();
+        $customer->price_level = 'LIST';
 
         return $customer;
     }
