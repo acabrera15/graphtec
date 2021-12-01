@@ -2,9 +2,9 @@
 class Customer {
 
     // private constants
-    private const DEFAULT_CLASS = 'RESELLER';
+    private const DEFAULT_CLASS = 'CONSUMER';
     private const DEFAULT_PAYMENT_TERM = "CREDIT CARD";
-    private const DEFAULT_PRICE_LEVEL = 'DEALER';
+    private const DEFAULT_PRICE_LEVEL = 'LIST';
     private const DEFAULT_SALESPERSON_ID = 'WEB';
     // end private constants
 

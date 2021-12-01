@@ -13,7 +13,7 @@ print_r($api_client->get([])->body);*/
 $config->endpoint = BIGCOMMERCE_V2_API_ENDPOINT;
 $api_client = new BigCommerceRestApiClient($config, 'orders/21549');
 print_r($api_client->get([]));
-exit();
+//exit();
 
 $api_client = new BigCommerceRestApiClient($config, 'shipping/zones');
 $zones_response = $api_client->get([]);

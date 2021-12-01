@@ -21,6 +21,14 @@ class BigCommerceRestApiClient {
     // end private members
     
     // public functions
+    public function set_config(ApiCredentialsConfig $config): void {
+        $this->config = $config;
+        $this->set_up_curl_resource();
+    }
+    public function set_resource_name(string $resource_name): void {
+        $this->resource_name = $resource_name;
+        $this->set_up_curl_resource();
+    }
     public function __construct(ApiCredentialsConfig $config, string $resource_name){
         $this->response = new RestApiResponse();
         $this->config = $config;

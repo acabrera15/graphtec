@@ -1,9 +1,10 @@
 <?php
 class Address {
 
-    // private constants
-    private const DEFAULT_TYPE = 'COMMERCIAL';
-    // end private constants
+    // public constants
+    public const TYPE_COMMERCIAL = 'COMMERCIAL';
+    public const TYPE_RESIDENTIAL = 'RESIDENTIAL';
+    // end public constants
 
     // public members
     public ?string  $address1 = null;
@@ -20,7 +21,7 @@ class Address {
     public ?string  $phone2 = null;
     public ?string  $phone3 = null;
     public ?string  $state = null;
-    public string   $type = self::DEFAULT_TYPE;
+    public string   $type = self::TYPE_COMMERCIAL;
     public ?string  $zip = null;
     // end public members
 }

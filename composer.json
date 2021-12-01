@@ -2,6 +2,8 @@
     "require": {
         "phpunit/phpunit": "^9.5",
       "ext-simplexml": "*",
-      "ext-soap": "*"
+      "ext-soap": "*",
+      "ext-curl": "*",
+      "ext-zlib": "*"
     }
 }
