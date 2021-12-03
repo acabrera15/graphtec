@@ -2,6 +2,7 @@
 class OrderGPOrderTranslator {
 
     use CurrencyFormatter;
+    use GpTranslatorHelper;
 
     // private constants
     private const BATCH_PREFIX = 'WEB-R-';
@@ -13,7 +14,6 @@ class OrderGPOrderTranslator {
     private const DEFAULT_PAYMENT_TERM = 'CREDIT CARD';
     private const DEFAULT_PAYMENT_TYPE = 'CREDIT_CARD';
     private const GP_SHIP_METHOD_BEST = 'BEST/PPA';
-    private const ID_PREFIX = 'BC-';
     private const PO_NUM_PREFIX = 'ECOM-';
     private const SALES_TAX_SCHD = 'WEB';
     private const SHIP_METHOD_UPS_READY = 'upsready';
@@ -34,7 +34,7 @@ class OrderGPOrderTranslator {
     }
 
     public function translate(): array {
-        $this->gp_order['ORDNO'] = self::ID_PREFIX . $this->order->id;
+        $this->gp_order['ORDNO'] = $this->order_id_to_gp_order_number($this->order->id);
         $this->gp_order['BATCHID'] = $this->batch_id();
         $this->gp_order['GPCUSTID'] = $this->gp_customer['GPCUSTID'];
         $this->gp_order['ORDDATE'] = !empty($this->order->date) ? $this->order->date->format('m/d/Y') : date('m/d/Y');
