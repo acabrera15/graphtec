@@ -4,7 +4,6 @@ class OrderTrackingUpdater {
     use GpTranslatorHelper;
 
     // private constants
-    private const DAYS_BACK = 90;
     private const BC_ORDER_STATUS_AWAITING_FULFILLMENT = 11;
     private const BC_ORDER_STATUS_AWAITING_PICKUP = 8;
     private const BC_ORDER_STATUS_AWAITING_SHIPMENT = 9;
@@ -13,6 +12,8 @@ class OrderTrackingUpdater {
         self::BC_ORDER_STATUS_AWAITING_PICKUP,
         self::BC_ORDER_STATUS_AWAITING_SHIPMENT
     ];
+    private const DAYS_BACK = 90;
+    private const GP_MAX_ORDERS_PER_REQUEST = 200;
     // end private constants
 
     // private members
@@ -37,9 +38,12 @@ class OrderTrackingUpdater {
         $this->query_big_commerce_orders();
 
         // query the statuses from GP
-
+        $orders_count = count($this->pending_bc_order_ids);
 
         // loop through the GP results, and update tracking info, where available
+        for ($i = 0; $i < ceil($orders_count / self::GP_MAX_ORDERS_PER_REQUEST); $i++){
+
+        }
 
 
     }

@@ -136,17 +136,34 @@ class GpInterfaceClientTest extends Testcase {
 
         // TEST 2: a standard order with several items that should work
         $return_arr[] = [
-            $this->valid_order(false, true, false),
+            $this->valid_order(false, false, 1.0),
             true
         ];
 
         // TEST 3: make sure a discount will go in
+        $return_arr[] = [
+            $this->valid_order(false, false, rand(50, 99) / 100),
+            true
+        ];
 
         // TEST 4: Try one with sales tax
+        $return_arr[] = [
+            $this->valid_order(true, false, rand(50, 99) / 100),
+            true
+        ];
+
 
         // TEST 5: Try one with a made-up product
+        $order_fake_item = $this->valid_order(false, false, 1.0);
+        $order_fake_item->items[] = $this->invalid_item();
+        $return_arr[] = [$order_fake_item, false];
 
-        // TEST 6: Try one where the amount paid is insufficient
+        // TEST 6: Try one with freight
+        $return_arr[] = [
+            $this->valid_order(true, true, 1.0),
+            true
+        ];
+
 
         return $return_arr;
     }
@@ -163,6 +180,14 @@ class GpInterfaceClientTest extends Testcase {
         $credentials->user_id = GP_USER_ID;
 
         return $credentials;
+    }
+
+    private function invalid_item(): OrderItem {
+        $item = new OrderItem();
+        $item->sku = 'FAKEITEMSKU-' . rand(100, 10000);
+        $item->unit_price = 0.00;
+
+        return $item;
     }
 
     private function valid_address(bool $is_default_billing, bool $is_default_shipping): Address {
@@ -247,8 +272,8 @@ class GpInterfaceClientTest extends Testcase {
                 $order->freight_amount += (rand(10, 20) / 100) * $item->extended_price();
             }
         }
-        $order->discount_amount = $order->subtotal() * $discount_multiplier;
-        $order->sales_tax_amount = $include_sales_tax ? (rand(5, 10) / 100) * $order->subtotal() : 0.00;
+        $order->discount_amount = $order->subtotal() - ($order->subtotal() * $discount_multiplier);
+        $order->sales_tax_amount = $include_sales_tax ? round((rand(5, 10) / 100) * $order->subtotal(), 2) : 0.00;
 
 
         $order->id = rand(10000, 10000000);

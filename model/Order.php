@@ -4,6 +4,8 @@ use JetBrains\PhpStorm\Pure;
 
 class Order {
 
+    use CurrencyFormatter;
+
     // private constants
     private const DEFAULT_CURRENCY_CODE = 'USD';
     private const DEFAULT_SHIP_METHOD = 'ups';
@@ -47,7 +49,7 @@ class Order {
             $subtotal += $item->extended_price();
         }
 
-        return $subtotal;
+        return $this->format_currency_value($subtotal, $this->currency_code);
     }
 
     public function total_paid(): float {
@@ -56,11 +58,14 @@ class Order {
             $total += $payment->amount;
         }
 
-        return $total;
+        return $this->format_currency_value($total, $this->currency_code);
     }
 
     public function total_sales_amount(): float {
-        return $this->subtotal() + $this->freight_amount + $this->sales_tax_amount - $this->discount_amount;
+        return $this->format_currency_value(
+            ($this->subtotal() + $this->freight_amount + $this->sales_tax_amount) - $this->discount_amount,
+            $this->currency_code
+        );
     }
 
     // end public functions

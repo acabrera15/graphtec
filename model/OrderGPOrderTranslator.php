@@ -34,7 +34,7 @@ class OrderGPOrderTranslator {
     }
 
     public function translate(): array {
-        $this->gp_order['ORDNO'] = $this->order_id_to_gp_order_number($this->order->id);
+        $this->gp_order['ORDNO'] = $this->order_id_to_gp_order_number((string) $this->order->id);
         $this->gp_order['BATCHID'] = $this->batch_id();
         $this->gp_order['GPCUSTID'] = $this->gp_customer['GPCUSTID'];
         $this->gp_order['ORDDATE'] = !empty($this->order->date) ? $this->order->date->format('m/d/Y') : date('m/d/Y');
