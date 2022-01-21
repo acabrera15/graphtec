@@ -33,6 +33,9 @@ class OrderGPOrderTranslator {
         $this->gp_customer = $customer_translator->translate();
     }
 
+    /**
+     * @return array
+     */
     public function translate(): array {
         $this->gp_order['ORDNO'] = $this->order_id_to_gp_order_number((string) $this->order->id);
         $this->gp_order['BATCHID'] = $this->batch_id();

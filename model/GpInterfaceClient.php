@@ -31,6 +31,34 @@ class GpInterfaceClient {
     }
 
     /**
+     * @param Order[] $orders
+     * @return array
+     * @throws Exception
+     */
+    public function order_statuses(array $orders): array {
+
+        $return_arr = [];
+
+        $data = [
+            'AUTHENTICATION' => $this->authentication_array(),
+            'ORDERSTATUSES' => []
+        ];
+
+        foreach ($orders as $order){
+            $translator = new OrderGPOrderTranslator($order);
+            $gp_order_arr = $translator->translate();
+            $data['ORDERSTATUSES'][] = [
+                'GPCUSTID' => $gp_order_arr['GPCUSTID'],
+                'ORDNO' => $gp_order_arr['ORDNO'],
+                'CUSTPONO' => $gp_order_arr['CUSTPONO']
+            ];
+        }
+
+
+        return $return_arr;
+    }
+
+    /**
      * @param string $site_id
      * @param array $item_numbers
      * @return InventoryItem[]
