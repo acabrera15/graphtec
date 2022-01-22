@@ -45,7 +45,7 @@ class BigCommerceOrderIDOrderTranslator {
     private function fetch1_basic_order_data(): void {
 
         $response = $this->bc_api_client->get([]);
-        $this->order_data = json_decode($response->body, true);
+        $this->order_data = (array) json_decode($response->body, true);
         if (empty($this->order_data)){
             $msg = "An error occurred when looking up order details.";
             $this->send_api_error($response, $this->bc_order_id, $msg);
@@ -61,7 +61,7 @@ class BigCommerceOrderIDOrderTranslator {
     private function fetch2_shipping_address_data(): void {
         $this->bc_api_client->set_resource_name('orders/' . $this->bc_order_id . '/shipping_addresses');
         $response = $this->bc_api_client->get([]);
-        $this->shipping_address_data = json_decode($response->body, true);
+        $this->shipping_address_data = (array) json_decode($response->body, true);
         if (empty($this->shipping_address_data)){
             $msg = "An error occurred when looking up order shipping addresses.";
             $this->send_api_error($response, $this->bc_order_id, $msg);
@@ -81,7 +81,7 @@ class BigCommerceOrderIDOrderTranslator {
         $this->bc_api_client->set_config($bc_config);
         $this->bc_api_client->set_resource_name('customers');
         $response = $this->bc_api_client->get(['id' => [$this->order_data['customer_id']]]);
-        $this->customer_data = json_decode($response->body, true);
+        $this->customer_data = (array) json_decode($response->body, true);
         if (empty($this->customer_data)){
             $msg = "An error occurred when looking up customer data.";
             $this->send_api_error($response, $this->bc_order_id, $msg);
@@ -96,11 +96,12 @@ class BigCommerceOrderIDOrderTranslator {
      */
     private function fetch4_order_products_data(): void {
         $bc_config = new ApiCredentialsConfig();
+        $bc_config->access_token = BIGCOMMERCE_API_ACCESS_TOKEN;
         $bc_config->endpoint = BIGCOMMERCE_V2_API_ENDPOINT;
         $this->bc_api_client->set_config($bc_config);
         $this->bc_api_client->set_resource_name('orders/' . $this->bc_order_id . '/products');
         $response = $this->bc_api_client->get([]);
-        $this->order_products_data = json_decode($response->body, true);
+        $this->order_products_data = (array) json_decode($response->body, true);
         if (empty($this->customer_data)){
             $msg = "An error occurred when looking up order product data.";
             $this->send_api_error($response, $this->bc_order_id, $msg);

@@ -33,6 +33,9 @@ class OrderTrackingUpdater {
         $this->gp_client = $gp_client;
     }
 
+    /**
+     * @throws Exception
+     */
     public function update_orders(): void {
 
         // set a long timeout for the script
@@ -53,9 +56,12 @@ class OrderTrackingUpdater {
                 $i * self::GP_MAX_ORDERS_PER_REQUEST,
                 self::GP_MAX_ORDERS_PER_REQUEST
             );
-            $order_data = $this->gp_client->order_statuses($orders_slice);
-
-
+            try {
+                $order_data = $this->gp_client->order_statuses($orders_slice);
+                print_r($order_data);
+            } catch (Exception $e){
+                echo "EXCEPTION: {$e->getMessage()}; file: {$e->getFile()}; line: {$e->getLine()}; type: " . get_class($e) . "\n";
+            }
         }
 
 

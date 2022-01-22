@@ -58,27 +58,33 @@ class BigCommerceOrderArrayOrderTranslator {
      */
     private function add_customer(): void {
 
+        if (!isset($this->bc_order_array['customer']['date_created'])){
+            return;
+        }
+
         // add our created billing and shipping addresses
         $this->order->customer->addresses[] = $this->order->billing_address;
         $this->order->customer->addresses[] = $this->order->shipping_address;
 
         // add any other addresses for the customer
-        foreach ($this->bc_order_array['customer']['addresses'] as $address_arr){
-            $address = new Address();
-            $address->address1 = $address_arr['address1'];
-            $address->address2 = $address_arr['address2'];
-            $address->city = $address_arr['city'];
-            $address->contact = trim("{$address_arr['first_name']} {$address_arr['last_name']} {$address_arr['company']}");
-            $address->country = $address_arr['country_code'];
-            $address->id = $address_arr['id'];
-            $address->is_default_billing = false;
-            $address->is_default_shipping = false;
-            $address->phone1 = $address_arr['phone'];
-            $address->state = $address_arr['state_or_province'];
-            $address->type = strtoupper($address_arr['address_type']);
-            $address->zip = $address_arr['postal_code'];
+        if (!empty($this->bc_order_array['customer']['addresses'])){
+            foreach ($this->bc_order_array['customer']['addresses'] as $address_arr){
+                $address = new Address();
+                $address->address1 = $address_arr['address1'];
+                $address->address2 = $address_arr['address2'];
+                $address->city = $address_arr['city'];
+                $address->contact = trim("{$address_arr['first_name']} {$address_arr['last_name']} {$address_arr['company']}");
+                $address->country = $address_arr['country_code'];
+                $address->id = $address_arr['id'];
+                $address->is_default_billing = false;
+                $address->is_default_shipping = false;
+                $address->phone1 = $address_arr['phone'];
+                $address->state = $address_arr['state_or_province'];
+                $address->type = strtoupper($address_arr['address_type']);
+                $address->zip = $address_arr['postal_code'];
 
-            $this->order->customer->addresses[] = $address;
+                $this->order->customer->addresses[] = $address;
+            }
         }
 
         $this->order->customer->credit_cards[] = $this->order->payments[0]->card;

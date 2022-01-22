@@ -43,17 +43,58 @@ class GpInterfaceClient {
             'AUTHENTICATION' => $this->authentication_array(),
             'ORDERSTATUSES' => []
         ];
+        $orders = [];
 
         foreach ($orders as $order){
             $translator = new OrderGPOrderTranslator($order);
             $gp_order_arr = $translator->translate();
             $data['ORDERSTATUSES'][] = [
-                'GPCUSTID' => $gp_order_arr['GPCUSTID'],
-                'ORDNO' => $gp_order_arr['ORDNO'],
-                'CUSTPONO' => $gp_order_arr['CUSTPONO']
+                'ORDERSTATUS' => [
+                    'GPCUSTID' => $gp_order_arr['GPCUSTID'],
+                    'ORDNO' => $gp_order_arr['ORDNO'],
+                    'CUSTPONO' => null
+                ]
             ];
         }
 
+        // TESTING
+        $data['ORDERSTATUSES'][] = [
+            'ORDERSTATUS' => [
+                'GPCUSTID' => 'W427874',
+                'ORDNO' => 'FCUT4847983',
+                'CUSTPONO' => null
+            ]
+        ];
+        // END TESTING
+
+        print_r($this->config);
+
+        $result = $this->soap_call('getOrderStatus', $data);
+        $this->check_response_for_errors($result);
+        if (!empty($result->ORDERSTATUSES) && !empty($result->ORDERSTATUSES->ORDERSTATUS)){
+            foreach ($result->ORDERSTATUSES->ORDERSTATUS as $gp_order){
+
+                // skip if it doesn't have a status
+                if (empty($gp_order->STATUS)){
+                    continue;
+                }
+
+                $order_status_data = [
+                    'order_id' => $gp_order->ORDNO,
+                    'status' => $gp_order->STATUS,
+                    'tracking' => []
+                ];
+                if (!empty($gp_order->TRACKINGNOS) && !empty($gp_order->TRACKINGNOS->TRACKNO)){
+                    foreach ($gp_order->TRACKINGNOS->TRACKNO as $gp_tracking){
+                        $order_status_data['tracking'][] = [
+                            'method' => $gp_order->SHPMTHD,
+                            'tracking_number' => $gp_tracking
+                        ];
+                    }
+                }
+                $return_arr[] = $order_status_data;
+            }
+        }
 
         return $return_arr;
     }
@@ -248,6 +289,8 @@ class GpInterfaceClient {
         if (!empty($xml_key2) && is_array($data2)){
             $xml_arr[$xml_key2] = $this->array_to_xml_string($data2, 'REQUEST');
         }
+        echo "calling method {$method} with the following data\n";
+
         $response_obj = $this->client->{$method}($xml_arr);
 
         return simplexml_load_string($response_obj->{$method . 'Result'});
