@@ -32,7 +32,8 @@ if (
     http_response_code(400); // bad client request; no JSON involved
 }
 
-function send_api_error(RestApiResponse $response, mixed $order_id, string $message){
+function send_api_error(RestApiResponse $response, mixed $order_id, string $message): void
+{
     mail(
         WEBMASTER_EMAIL,
         'Error Processing Graphtec America BigCommerce Order!',
