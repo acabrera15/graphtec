@@ -293,6 +293,8 @@ class GpInterfaceClient {
 
         $response_obj = $this->client->{$method}($xml_arr);
 
+        echo "\n\nXML:" . html_entity_decode($this->client->__getLastRequest()) . "\n\n";
+
         return simplexml_load_string($response_obj->{$method . 'Result'});
     }
     // end private functions

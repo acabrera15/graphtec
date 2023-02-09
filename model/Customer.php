@@ -2,10 +2,10 @@
 class Customer {
 
     // private constants
-    private const DEFAULT_CLASS = 'CONSUMER';
+    private const DEFAULT_CLASS = 'WEB';
     private const DEFAULT_PAYMENT_TERM = "CREDIT CARD";
     private const DEFAULT_PRICE_LEVEL = 'LIST';
-    private const DEFAULT_SALESPERSON_ID = 'WEB';
+    private const DEFAULT_SALESPERSON_ID = 'D-HOUSE';
     // end private constants
 
     // public members

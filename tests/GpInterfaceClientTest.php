@@ -234,7 +234,7 @@ class GpInterfaceClientTest extends Testcase {
         $customer->addresses[] = $this->valid_address(true, false);
         $customer->addresses[] = $this->valid_address(false, true);
         $customer->addresses[] = $this->valid_address(false, false);
-        $customer->class = 'CONSUMER';
+        $customer->class = 'WEB';
         $customer->credit_cards[] = $this->valid_credit_card(true);
         $customer->credit_cards[] = $this->valid_credit_card(false);
         $customer->date_joined = new DateTime();
