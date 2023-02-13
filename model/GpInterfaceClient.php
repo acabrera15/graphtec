@@ -291,6 +291,10 @@ class GpInterfaceClient {
         }
         echo "calling method {$method} with the following data\n";
 
+        if ($method === 'ImportCustomerAndSalesOrder'){
+            print_r($xml_arr);
+        }
+
         $response_obj = $this->client->{$method}($xml_arr);
 
         echo "\n\nXML:" . html_entity_decode($this->client->__getLastRequest()) . "\n\n";
