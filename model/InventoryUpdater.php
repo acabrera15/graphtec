@@ -79,6 +79,10 @@ class InventoryUpdater {
     }
 
     private function process_batch(array &$batch): void {
+        echo "Skipping actual BC order updating for now, since we are testing with fake data.\n";
+        exit();
+
+
         $response = $this->bc_client->put($batch);
         echo "{$response->status_code} - ";
         echo match ($response->status_code) {
