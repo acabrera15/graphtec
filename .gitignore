@@ -4,7 +4,7 @@
 #     https://www.atlassian.com/git/tutorials/saving-changes/gitignore
 
 # config files
-config.inc
+config.sandbox.inc
 
 # Node artifact files
 node_modules/

@@ -66,9 +66,6 @@ class GpInterfaceClient {
             ]
         ];
         // END TESTING
-
-        print_r($this->config);
-
         $result = $this->soap_call('getOrderStatus', $data);
         $this->check_response_for_errors($result);
         if (!empty($result->ORDERSTATUSES) && !empty($result->ORDERSTATUSES->ORDERSTATUS)){
@@ -138,20 +135,6 @@ class GpInterfaceClient {
             $return_arr[] = $item;
         }
         $this->message = 'Inventory queried successfully';
-
-        // DELETE THIS TO GO LIVE
-        $return_arr = [];
-
-        $item1 = new InventoryItem();
-        $item1->quantity = rand(100, 10000);
-        $item1->sku = 'CB09UB-K60';
-        $return_arr[] = $item1;
-
-        $item2 = new InventoryItem();
-        $item2->quantity = rand(50, 500);
-        $item2->sku = 'CP-001';
-        $return_arr[] = $item2;
-        // END DELETE THIS TO GO LIVE
 
         return $return_arr;
     }

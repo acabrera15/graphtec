@@ -20,6 +20,10 @@ class InventoryUpdater {
         $this->gp_client = $gp_client;
     }
 
+    /**
+     * @return void
+     * @throws Exception
+     */
     public function update_inventory(): void {
         $this->build_product_sku_map();
 
@@ -79,12 +83,13 @@ class InventoryUpdater {
     }
 
     private function process_batch(array &$batch): void {
-        echo "Skipping actual BC order updating for now, since we are testing with fake data.\n";
-        exit();
+        echo "Skipping actual BC order updating until we are ready to go live.\n";
+        echo "here's the batch\n";
+        print_r($batch);
+        return;
 
 
         $response = $this->bc_client->put($batch);
-        echo "{$response->status_code} - ";
         echo match ($response->status_code) {
             $response::RESPONSE_CODE_CONFLICT => "ERROR: Product was in conflict with another\n",
             $response::RESPONSE_ENTITY_TOO_LARGE => "ERROR: Request entity too large\n",

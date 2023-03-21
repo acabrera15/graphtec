@@ -1,5 +1,5 @@
 <?php
-require_once('config.inc');
+require_once('config.production.inc');
 
 // auto-loader
 spl_autoload_register(function ($class_name) {
