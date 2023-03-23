@@ -83,10 +83,10 @@ class InventoryUpdater {
     }
 
     private function process_batch(array &$batch): void {
-        echo "Skipping actual BC order updating until we are ready to go live.\n";
+        /*echo "Skipping actual BC order updating until we are ready to go live.\n";
         echo "here's the batch\n";
         print_r($batch);
-        return;
+        return;*/
 
 
         $response = $this->bc_client->put($batch);
