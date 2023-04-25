@@ -7,6 +7,8 @@ class OrderTrackingUpdater {
     private const BC_ORDER_STATUS_AWTNG_FLFLLMNT = 11;
     private const BC_ORDER_STATUS_AWTNG_PICKUP = 8;
     private const BC_ORDER_STATUS_AWTNG_SHIPMENT = 9;
+    private const BC_ORDER_STATUS_PENDING = 1;
+    private const BC_ORDER_STATUS_SHIPPED = 2;
     private const BC_UNSHIPPED_ORDER_STATUSES = [
         self::BC_ORDER_STATUS_AWTNG_FLFLLMNT,
         self::BC_ORDER_STATUS_AWTNG_PICKUP,
@@ -14,6 +16,7 @@ class OrderTrackingUpdater {
     ];
     private const DAYS_BACK = 90;
     private const GP_MAX_ORDERS_PER_REQUEST = 200;
+    private const GP_ORDER_STATUS_SHIPPED = '3';
     private const SCRIPT_TIME_LIMIT = 7200;
     // end private constants
 
@@ -46,9 +49,11 @@ class OrderTrackingUpdater {
 
         // query the statuses from GP
         $orders_count = count($this->pending_bc_orders);
+        echo "Found a total of {$orders_count} pending BigCommerce orders.\n";
 
         // loop through the GP results, and update tracking info, where available
         for ($i = 0; $i < ceil($orders_count / self::GP_MAX_ORDERS_PER_REQUEST); $i++){
+            echo "\tSlide $i of the BigCommerce orders...\n";
 
             // take a slice of the array
             $orders_slice = array_slice(
@@ -58,13 +63,56 @@ class OrderTrackingUpdater {
             );
             try {
                 $order_data = $this->gp_client->order_statuses($orders_slice);
-                print_r($order_data);
+                echo "\tFound a total of " . count($order_data) . " order statuses in GP for these BC orders...\n";
+                foreach ($orders_slice as $order){
+
+                    if (!empty($order_data[$order->id])){
+
+                        echo "\t\tOrder #{$order->id}...\n";
+
+                        // if it's got shipment info, let's attach it
+                        if (!empty($order_data[$order->id]->tracking)){
+
+                            echo "\t\t\tIt has tracking info!\n";
+                            $this->bc_client->set_resource_name('orders/' . $order->id . '/shipments');
+                            foreach($order_data[$order->id]->tracking as $tracking){
+                                echo "\t\t\t\tSending over tracking number {$tracking->tracking_number}\n";
+                                    $shipment_data = [
+                                        'items' => [],
+                                        'order_address_id' => $order->shipping_address->id,
+                                        'tracking_number' => $tracking->tracking_number
+                                    ];
+                                    foreach ($order->items as $item){
+                                        $shipment_data['items'][] = [
+                                            'order_product_id' => $item->product_id,
+                                            'quantity' => $item->quantity
+                                        ];
+                                    }
+                                    $shipment_response = $this->bc_client->post($shipment_data);
+                                    if ($shipment_response->status_code === 201){
+                                        echo "\t\t\t\t\tSUCCESS\n";
+                                    } else {
+                                        echo "\t\t\t\t\tERROR: Could not send ship tracking info: " . $shipment_response->body . "\n";
+                                    }
+
+                            }
+                        }
+
+                        // update the order status
+                        echo "\t\t\tUpdating status...\n";
+                        $this->bc_client->set_resource_name('orders/' . $order->id);
+                        $status_response = $this->bc_client->put(['status_id' => $order_data[$order->id]->status]);
+                        if (in_array($status_response->status_code, [200, 201])){
+                            echo "\t\t\t\tSUCCESS\n";
+                        } else {
+                            echo "\t\t\t\tERROR: Could not update order status: " . $status_response->body . "\n";
+                        }
+                    }
+                }
             } catch (Exception $e){
                 echo "EXCEPTION: {$e->getMessage()}; file: {$e->getFile()}; line: {$e->getLine()}; type: " . get_class($e) . "\n";
             }
         }
-
-
     }
     // end public functions
 
@@ -80,7 +128,7 @@ class OrderTrackingUpdater {
                 break;
             }
 
-            echo "Page {$page}: Found " . count($response_arr) . " orders...\n";
+            echo "Page $page: Found " . count($response_arr) . " orders...\n";
             foreach ($response_arr as $order_data_arr){
                 if (in_array($order_data_arr['status_id'], self::BC_UNSHIPPED_ORDER_STATUSES)){
 

@@ -99,6 +99,7 @@ class BigCommerceOrderArrayOrderTranslator {
         foreach ($this->bc_order_array['products'] as $product_arr){
             $item = new OrderItem();
             $item->backorder_quantity = 0;
+            $item->product_id = $product_arr['product_id'];
             $item->quantity = $product_arr['quantity'];
             $item->sku = $product_arr['sku'];
             $item->unit_price = $product_arr['base_price'];

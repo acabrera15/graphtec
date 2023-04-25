@@ -4,10 +4,18 @@ use JetBrains\PhpStorm\ArrayShape;
 
 class GpInterfaceClient {
 
-    use Logger;
+    use Logger, GpTranslatorHelper;
 
     // private constants
+    private const BC_ORDER_STATUS_AWTNG_FLFLLMNT = 11;
+    private const BC_ORDER_STATUS_AWTNG_PICKUP = 8;
+    private const BC_ORDER_STATUS_AWTNG_SHIPMENT = 9;
+    private const BC_ORDER_STATUS_PENDING = 1;
+    private const BC_ORDER_STATUS_SHIPPED = 2;
     private const DEFAULT_PRCLEVEL = 'DEALER';
+    private const GP_ORDER_STATUS_PENDING = '1';
+    private const GP_ORDER_STATUS_PROCESSING = '2';
+    private const GP_ORDER_STATUS_SHIPPED = '3';
     private const LOG = 'class.GpInterfaceClient.log';
     private const SEVERITY_SUCCESS = 'SUCCESS';
     // end private constants
@@ -32,7 +40,7 @@ class GpInterfaceClient {
 
     /**
      * @param Order[] $orders
-     * @return array
+     * @return OrderStatus[]
      * @throws Exception
      */
     public function order_statuses(array $orders): array {
@@ -43,8 +51,6 @@ class GpInterfaceClient {
             'AUTHENTICATION' => $this->authentication_array(),
             'ORDERSTATUSES' => []
         ];
-        $orders = [];
-
         foreach ($orders as $order){
             $translator = new OrderGPOrderTranslator($order);
             $gp_order_arr = $translator->translate();
@@ -56,16 +62,6 @@ class GpInterfaceClient {
                 ]
             ];
         }
-
-        // TESTING
-        $data['ORDERSTATUSES'][] = [
-            'ORDERSTATUS' => [
-                'GPCUSTID' => 'W427874',
-                'ORDNO' => 'FCUT4847983',
-                'CUSTPONO' => null
-            ]
-        ];
-        // END TESTING
         $result = $this->soap_call('getOrderStatus', $data);
         $this->check_response_for_errors($result);
         if (!empty($result->ORDERSTATUSES) && !empty($result->ORDERSTATUSES->ORDERSTATUS)){
@@ -76,20 +72,29 @@ class GpInterfaceClient {
                     continue;
                 }
 
-                $order_status_data = [
-                    'order_id' => $gp_order->ORDNO,
-                    'status' => $gp_order->STATUS,
-                    'tracking' => []
-                ];
-                if (!empty($gp_order->TRACKINGNOS) && !empty($gp_order->TRACKINGNOS->TRACKNO)){
-                    foreach ($gp_order->TRACKINGNOS->TRACKNO as $gp_tracking){
-                        $order_status_data['tracking'][] = [
-                            'method' => $gp_order->SHPMTHD,
-                            'tracking_number' => $gp_tracking
-                        ];
-                    }
+                $order_status = new OrderStatus();
+                $order_status->order_id = $this->gp_order_number_to_order_id($gp_order->ORDNO);
+                $order_status->status = self::BC_ORDER_STATUS_AWTNG_FLFLLMNT;
+                $order_status->tracking = [];
+                switch ($gp_order->STATUS){
+                    case self::GP_ORDER_STATUS_PENDING:
+                        $order_status->status = self::BC_ORDER_STATUS_AWTNG_FLFLLMNT;
+                        break;
+                    case self::GP_ORDER_STATUS_PROCESSING:
+                        $order_status->status = self::BC_ORDER_STATUS_AWTNG_SHIPMENT;
+                        break;
+                    case self::GP_ORDER_STATUS_SHIPPED:
+                        $order_status->status = self::BC_ORDER_STATUS_SHIPPED;
+                        if (!empty($gp_order->TRACKINGNOS)){
+                            foreach ($gp_order->TRACKINGNOS->TRACKNO as $tracking_number){
+                                $tracking = new OrderShipTracking();
+                                $tracking->method = $gp_order->SHPMTHD;
+                                $tracking->tracking_number = $tracking_number;
+                                $order_status->tracking[] = $tracking;
+                            }
+                        }
                 }
-                $return_arr[] = $order_status_data;
+                $return_arr[$order_status->order_id] = $order_status;
             }
         }
 
@@ -199,7 +204,7 @@ class GpInterfaceClient {
 
         // set the initial element if needed
         if (is_null($xml)):
-            $xml = simplexml_load_string("<?xml version='1.0' encoding='utf-8'?><{$root_node_name} />");
+            $xml = simplexml_load_string("<?xml version='1.0' encoding='utf-8'?><$root_node_name />");
         endif;
 
         // iterate the data
@@ -243,11 +248,11 @@ class GpInterfaceClient {
             $msg = '';
             if (!empty($result->NOTIFICATIONS->MESSAGES)){
                 foreach ($result->NOTIFICATIONS->MESSAGES->MESSAGE as $message){
-                    $msg .= "{$message}\n";
+                    $msg .= "$message\n";
                 }
             }
 
-            throw new Exception("SEVERITY: {$result->NOTIFICATIONS->SEVERITY}\nMessages: {$msg}");
+            throw new Exception("SEVERITY: {$result->NOTIFICATIONS->SEVERITY}\nMessages: $msg");
         }
     }
 
@@ -272,7 +277,7 @@ class GpInterfaceClient {
         if (!empty($xml_key2) && is_array($data2)){
             $xml_arr[$xml_key2] = $this->array_to_xml_string($data2, 'REQUEST');
         }
-        echo "calling method {$method} with the following data\n";
+        echo "calling method $method with the following data\n";
 
         if ($method === 'ImportCustomerAndSalesOrder'){
             print_r($xml_arr);
