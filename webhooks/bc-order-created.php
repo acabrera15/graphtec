@@ -27,17 +27,21 @@ if (
     } catch (Exception $e){
         http_response_code(500);
         echo "EXCEPTION: {$e->getMessage()}\n";
+        $response = new RestApiResponse();
+        $response->status_code = 500;
+        $response->body = $e->getMessage();
+        send_api_error($response, $request_arr['data']['id']);
     }
 } else {
     http_response_code(400); // bad client request; no JSON involved
 }
 
-function send_api_error(RestApiResponse $response, mixed $order_id, string $message): void
+function send_api_error(RestApiResponse $response, mixed $order_id): void
 {
     mail(
         WEBMASTER_EMAIL,
         'Error Processing Graphtec America BigCommerce Order!',
-        "{$message} \nOrder ID #{$order_id}\nStatus Code: {$response->status_code}\n",
+        "{$response->body} \nOrder ID #{$order_id}\nStatus Code: {$response->status_code}\n",
         "From:no-reply@graphtecamericastore.com"
     );
     http_response_code(500);
