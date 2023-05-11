@@ -83,12 +83,6 @@ class InventoryUpdater {
     }
 
     private function process_batch(array &$batch): void {
-        /*echo "Skipping actual BC order updating until we are ready to go live.\n";
-        echo "here's the batch\n";
-        print_r($batch);
-        return;*/
-
-
         $response = $this->bc_client->put($batch);
         echo match ($response->status_code) {
             $response::RESPONSE_CODE_CONFLICT => "ERROR: Product was in conflict with another\n",
