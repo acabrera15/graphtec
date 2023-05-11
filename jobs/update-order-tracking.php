@@ -1,5 +1,5 @@
 <?php
-require_once ('../app.php');
+require_once (dirname(__FILE__) . '/../app.php');
 
 echo "\n\nSTART\n\n";
 
