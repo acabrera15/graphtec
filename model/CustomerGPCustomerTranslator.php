@@ -53,7 +53,9 @@ class CustomerGPCustomerTranslator {
     // private functions
     private function add_addresses(): void {
         foreach ($this->customer->addresses as $address){
-
+            if (empty($address->type)){
+                continue;
+            }
             $this->write_to_log(get_class($this) . '.log', "Including the following address: " . print_r($address, true));
 
             // add an extra entry if it's the primary
