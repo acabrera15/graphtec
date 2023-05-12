@@ -48,7 +48,9 @@ class Customer {
             }
         }
         if (empty($id) && !empty($this->addresses)){
-            return $this->addresses[0];
+            foreach ($this->addresses as $address){
+                return $address;
+            }
         }
 
         return null;
