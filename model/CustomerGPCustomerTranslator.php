@@ -1,6 +1,8 @@
 <?php
 class CustomerGPCustomerTranslator {
 
+    use Logger;
+
     // private constants
     private const CUST_ID_PREFIX = 'ECOM';
     private const DEFAULT_SHIP_METHOD = 'BEST/PPA';
@@ -18,6 +20,8 @@ class CustomerGPCustomerTranslator {
         if (empty($customer->id) && !empty($guest_checkout_id)){
             $this->customer->id = self::GUEST_ID_PREFIX . $guest_checkout_id;
         }
+
+        $this->write_to_log(get_class($this) . '.log', print_r($this->customer, true) . "Guest checkout ID: {$guest_checkout_id}\n\n");
     }
 
     public function translate(): array {
