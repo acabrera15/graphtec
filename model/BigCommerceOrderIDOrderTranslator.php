@@ -77,18 +77,24 @@ class BigCommerceOrderIDOrderTranslator {
      * @throws Exception
      */
     private function fetch3_customer_data(): void {
-        $bc_config = new ApiCredentialsConfig();
-        $bc_config->access_token = BIGCOMMERCE_API_ACCESS_TOKEN;
-        $bc_config->endpoint = BIGCOMMERCE_V3_API_ENDPOINT;
-        $this->bc_api_client->set_config($bc_config);
-        $this->bc_api_client->set_resource_name('customers');
-        $response = $this->bc_api_client->get(['id' => [$this->order_data['customer_id']]]);
-        $this->write_to_log(get_class($this) . '.log', "customer data response: " . print_r($response, true) . "\n");
-        $this->customer_data = (array) json_decode($response->body, true);
-        if (empty($this->customer_data)){
-            $msg = "An error occurred when looking up customer data.";
-            $this->send_api_error($response, $this->bc_order_id, $msg);
-            throw new Exception($msg);
+
+        if (!empty($this->order_data['customer_id'])){
+            $bc_config = new ApiCredentialsConfig();
+            $bc_config->access_token = BIGCOMMERCE_API_ACCESS_TOKEN;
+            $bc_config->endpoint = BIGCOMMERCE_V3_API_ENDPOINT;
+            $this->bc_api_client->set_config($bc_config);
+            $this->bc_api_client->set_resource_name('customers');
+            $response = $this->bc_api_client->get(['id' => [$this->order_data['customer_id']]]);
+            $response_data = (array) json_decode($response->body, true);
+            if (empty($response_data['data'])){
+                $msg = "An error occurred when looking up customer data.";
+                $this->send_api_error($response, $this->bc_order_id, $msg);
+                throw new Exception($msg);
+            }
+            $this->customer_data = $response_data['data'];
+            $this->customer_data['id'] = $this->order_data['customer_id'];
+        } else {
+            $this->initialize_guest_customer_data();
         }
 
         $this->fetch4_order_products_data();
@@ -105,7 +111,7 @@ class BigCommerceOrderIDOrderTranslator {
         $this->bc_api_client->set_resource_name('orders/' . $this->bc_order_id . '/products');
         $response = $this->bc_api_client->get([]);
         $this->order_products_data = (array) json_decode($response->body, true);
-        if (empty($this->customer_data)){
+        if (empty($this->order_products_data)){
             $msg = "An error occurred when looking up order product data.";
             $this->send_api_error($response, $this->bc_order_id, $msg);
             throw new Exception($msg);
@@ -117,6 +123,20 @@ class BigCommerceOrderIDOrderTranslator {
         $bc_config->access_token = BIGCOMMERCE_API_ACCESS_TOKEN;
         $bc_config->endpoint = BIGCOMMERCE_V2_API_ENDPOINT;
         $this->bc_api_client = new BigCommerceRestApiClient($bc_config, 'orders/' . $this->bc_order_id);
+    }
+
+    private function initialize_guest_customer_data(): void {
+        $this->customer_data = [
+            'addresses' => $this->shipping_address_data,
+            'company' => $this->shipping_address_data[0]['company'],
+            'customer_group_id' => 0,
+            'email' => $this->shipping_address_data[0]['email'],
+            'first_name' => $this->shipping_address_data[0]['first_name'],
+            'id' => 'bc-guest-' . time() . rand(100, 9999),
+            'last_name' => $this->shipping_address_data[0]['last_name'],
+            'notes' => 'Customer data generated from shipping address data for guest checkout',
+            'phone' => $this->shipping_address_data[0]['phone']
+        ];
     }
 
     private function send_api_error(RestApiResponse $response, mixed $order_id, string $message): void
