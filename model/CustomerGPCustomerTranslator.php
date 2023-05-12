@@ -67,7 +67,7 @@ class CustomerGPCustomerTranslator {
                     'CITY' => $address->city,
                     'STATE' => $address->state,
                     'ZIP' => $address->zip,
-                    'COUNTRY' => $address->country,
+                    'COUNTRY' => $this->format_country_code($address->country),
                     'PHONE1' => $address->phone1,
                     'PHONE2' => $address->phone2,
                     'PHONE3' => $address->phone3,
@@ -88,7 +88,7 @@ class CustomerGPCustomerTranslator {
                 'CITY' => $address->city,
                 'STATE' => $address->state,
                 'ZIP' => $address->zip,
-                'COUNTRY' => $address->country,
+                'COUNTRY' => $this->format_country_code($address->country),
                 'PHONE1' => $address->phone1,
                 'PHONE2' => $address->phone2,
                 'PHONE3' => $address->phone3,
@@ -112,6 +112,20 @@ class CustomerGPCustomerTranslator {
                 'CARDTYPE' => $card->type
             ]];
         }
+    }
+
+    private function format_country_code(string $iso_alpha2_code): string {
+        $iso_alpha2_code = strtolower($iso_alpha2_code);
+        $countries_data_file = dirname(__FILE__) . '/../data/countries.json';
+        if (file_exists($countries_data_file)){
+            $countries_json = json_decode(file_get_contents($countries_data_file), true);
+            foreach ($countries_json as $country){
+                if ($country['alpha2'] === $iso_alpha2_code){
+                    return strtoupper($country['alpha3']);
+                }
+            }
+        }
+        return 'USA';
     }
     // end private functions
 
