@@ -116,16 +116,17 @@ class CustomerGPCustomerTranslator {
 
     private function format_country_code(string $iso_alpha2_code): string {
         $iso_alpha2_code = strtolower($iso_alpha2_code);
-        $countries_data_file = dirname(__FILE__) . '/../data/countries.json';
-        if (file_exists($countries_data_file)){
-            $countries_json = json_decode(file_get_contents($countries_data_file), true);
-            foreach ($countries_json as $country){
-                if ($country['alpha2'] === $iso_alpha2_code){
-                    return strtoupper($country['alpha3']);
-                }
-            }
-        }
-        return 'USA';
+        return match ($iso_alpha2_code) {
+            'br' => 'BRAZIL',
+            'ca' => 'CANADA',
+            'ec' => 'ECUADO',
+            'ko' => 'KOREA',
+            'mx' => 'MX',
+            'nl' => 'AMSTER',
+            'pa' => 'PANAMA',
+            'se' => 'SWEDEN',
+            default => 'USA',
+        };
     }
     // end private functions
 

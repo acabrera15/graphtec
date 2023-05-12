@@ -66,6 +66,7 @@ class BigCommerceOrderArrayOrderTranslator {
     private function add_customer(): void {
 
         if (!isset($this->bc_order_array['customer']['date_created'])){
+            $this->write_to_log(get_class($this) . '.log', "No date created for the customer, so we are skipping\n");
             return;
         }
 
@@ -92,6 +93,8 @@ class BigCommerceOrderArrayOrderTranslator {
 
                 $this->order->customer->addresses[] = $address;
             }
+        } else {
+            $this->write_to_log(get_class($this) . '.log', "Customer address array is empty");
         }
 
         $this->order->customer->credit_cards[] = $this->order->payments[0]->card;
