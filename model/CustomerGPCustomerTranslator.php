@@ -23,7 +23,7 @@ class CustomerGPCustomerTranslator {
     public function translate(): array {
 
         $this->gp_customer['GPCUSTID'] = self::CUST_ID_PREFIX . $this->customer->id;
-        $this->gp_customer['NAME'] = $this->customer->name;
+        $this->gp_customer['NAME'] = !empty($this->customer->name) ? $this->customer->name : 'Guest Checkout';
         $this->gp_customer['CUSTCLASS'] = $this->customer->class;
         $this->gp_customer['PRCLEVEL'] = $this->customer->price_level;
         $this->gp_customer['PRADDRID'] = 'PRIMARY';

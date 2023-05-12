@@ -1,6 +1,8 @@
 <?php
 class BigCommerceOrderArrayOrderTranslator {
 
+    use Logger;
+
     // private members
     private array   $bc_order_array;
     private ?Order  $order;
@@ -12,6 +14,14 @@ class BigCommerceOrderArrayOrderTranslator {
         $this->bc_order_array['shipping_addresses'] = $bc_shipping_addresses;
         $this->bc_order_array['customer'] = $bc_customer_array;
         $this->bc_order_array['products'] = $bc_order_products;
+
+        $this->write_to_log(
+            get_class($this) . '.log',
+            "BC order array: " . print_r($bc_order_array, true)
+                . "\nBC shipping addresses: " . print_r($bc_shipping_addresses, true)
+                . "\nBC customer array: " . print_r($bc_customer_array, true)
+                . "\nBC order products: " . print_r($bc_order_products, true)
+        );
     }
 
     /**
