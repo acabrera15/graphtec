@@ -54,6 +54,8 @@ class CustomerGPCustomerTranslator {
     private function add_addresses(): void {
         foreach ($this->customer->addresses as $address){
 
+            $this->write_to_log(get_class($this) . '.log', "Including the following address: " . print_r($address, true));
+
             // add an extra entry if it's the primary
             if ($this->customer->primary_address()->id === $address->id){
                 $this->gp_customer['ADDRESSES'][] = ['ADDRESS' => [
