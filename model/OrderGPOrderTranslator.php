@@ -3,6 +3,7 @@ class OrderGPOrderTranslator {
 
     use CurrencyFormatter;
     use GpTranslatorHelper;
+    use Logger;
 
     // private constants
     private const BATCH_PREFIX = 'WEB-R-';
@@ -31,6 +32,8 @@ class OrderGPOrderTranslator {
         $guest_checkout_id = !empty($order->customer->id) ? $this->order->id : null;
         $customer_translator = new CustomerGPCustomerTranslator($this->order->customer, $guest_checkout_id);
         $this->gp_customer = $customer_translator->translate();
+
+        $this->write_to_log(get_class($this) . '.log', "Order: " . print_r($this->order, true) . "\n");
     }
 
     /**

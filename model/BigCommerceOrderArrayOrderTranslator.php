@@ -17,10 +17,7 @@ class BigCommerceOrderArrayOrderTranslator {
 
         $this->write_to_log(
             get_class($this) . '.log',
-            "BC order array: " . print_r($bc_order_array, true)
-                . "\nBC shipping addresses: " . print_r($bc_shipping_addresses, true)
-                . "\nBC customer array: " . print_r($bc_customer_array, true)
-                . "\nBC order products: " . print_r($bc_order_products, true)
+            "BC order array: " . print_r($this->bc_order_array, true)
         );
     }
 
