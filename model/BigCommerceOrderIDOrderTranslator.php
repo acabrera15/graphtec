@@ -1,6 +1,8 @@
 <?php
 class BigCommerceOrderIDOrderTranslator {
 
+    use Logger;
+
     // private members
     private BigCommerceRestApiClient    $bc_api_client;
     private string                      $bc_order_id;
@@ -81,6 +83,7 @@ class BigCommerceOrderIDOrderTranslator {
         $this->bc_api_client->set_config($bc_config);
         $this->bc_api_client->set_resource_name('customers');
         $response = $this->bc_api_client->get(['id' => [$this->order_data['customer_id']]]);
+        $this->write_to_log(get_class($this) . '.log', "customer data response: " . print_r($response, true) . "\n");
         $this->customer_data = (array) json_decode($response->body, true);
         if (empty($this->customer_data)){
             $msg = "An error occurred when looking up customer data.";
@@ -116,7 +119,8 @@ class BigCommerceOrderIDOrderTranslator {
         $this->bc_api_client = new BigCommerceRestApiClient($bc_config, 'orders/' . $this->bc_order_id);
     }
 
-    private function send_api_error(RestApiResponse $response, mixed $order_id, string $message){
+    private function send_api_error(RestApiResponse $response, mixed $order_id, string $message): void
+    {
         mail(
             WEBMASTER_EMAIL,
             'Error Processing Graphtec America BigCommerce Order!',
