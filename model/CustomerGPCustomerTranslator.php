@@ -4,9 +4,9 @@ class CustomerGPCustomerTranslator {
     use Logger;
 
     // private constants
-    private const CUST_ID_PREFIX = 'ECOM';
+    private const CUST_ID_PREFIX = 'E-';
     private const DEFAULT_SHIP_METHOD = 'BEST/PPA';
-    private const GUEST_ID_PREFIX = 'GUEST-';
+    private const GUEST_ID_PREFIX = 'G-';
     // end private constants
 
     // private members
