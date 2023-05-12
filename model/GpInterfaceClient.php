@@ -278,7 +278,11 @@ class GpInterfaceClient {
             $xml_arr[$xml_key2] = $this->array_to_xml_string($data2, 'REQUEST');
         }
 
+        $this->write_to_log(self::LOG, "REQUEST\n" . print_r($xml_arr, true));
+
         $response_obj = $this->client->{$method}($xml_arr);
+
+        $this->write_to_log(self::LOG, "REPLY: " . print_r($response_obj, true) . "\n");
 
         return simplexml_load_string($response_obj->{$method . 'Result'});
     }
