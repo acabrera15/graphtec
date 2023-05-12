@@ -130,6 +130,7 @@ class BigCommerceOrderIDOrderTranslator {
             'addresses' => $this->shipping_address_data,
             'company' => $this->shipping_address_data[0]['company'],
             'customer_group_id' => 0,
+            'date_created' => date('T'),
             'email' => $this->shipping_address_data[0]['email'],
             'first_name' => $this->shipping_address_data[0]['first_name'],
             'id' => 'bc-guest-' . time() . rand(100, 9999),
