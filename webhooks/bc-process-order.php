@@ -2,7 +2,7 @@
 require_once ('../app.php');
 
 // log it for now
-file_put_contents('../logs/bc-process-order.log', file_get_contents("php://input") . "\n", FILE_APPEND);
+write_to_webhook_log(file_get_contents("php://input"));
 const IMPORT_STATUS_IDS = [
     8, // awaiting pickup
     9, // awaiting shipment
@@ -55,5 +55,10 @@ function send_api_error(RestApiResponse $response, mixed $order_id): void
         "From:no-reply@graphtecamericastore.com"
     );
     http_response_code(500);
+    write_to_webhook_log($response->status_code . ' - ' . $response->body . "\n");
+}
+
+function write_to_webhook_log(string $message): void {
+    file_put_contents('../logs/bc-process-order.log', date('Y-m-d H:i:s') . " - {$message}\n", FILE_APPEND);
 }
 
