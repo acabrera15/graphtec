@@ -3,6 +3,12 @@ require_once ('../app.php');
 
 // log it for now
 file_put_contents('../logs/order-created-json.log', file_get_contents("php://input") . "\n", FILE_APPEND);
+const IMPORT_STATUS_IDS = [
+    8, // awaiting pickup
+    9, // awaiting shipment
+    10, // paid for digital product
+    11 // awaiting fulfillment after payment
+];
 
 $request = file_get_contents("php://input");
 $request_arr = json_decode($request, true);
@@ -16,6 +22,10 @@ if (
     try {
         $translator = new BigCommerceOrderIDOrderTranslator((string) $request_arr['data']['id']);
         $order = $translator->translate();
+        if (!in_array($order->status_id, IMPORT_STATUS_IDS)){
+            http_response_code(200);
+            exit('This order status is not ready to import into GP');
+        }
 
         // connect to the GP Web Interface and attempt to send over the order
         $credentials = new SoapCredentialsConfig();

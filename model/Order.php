@@ -34,6 +34,7 @@ class Order {
     public string       $ship_method = self::DEFAULT_SHIP_METHOD;
     public ?Address     $shipping_address = null;
     public string       $site_id = self::DEFAULT_SITE_ID;
+    public int|string   $status_id = 0;
     // end public members
 
     // public functions

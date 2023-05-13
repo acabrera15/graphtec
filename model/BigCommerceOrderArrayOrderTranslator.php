@@ -36,6 +36,7 @@ class BigCommerceOrderArrayOrderTranslator {
         $this->order->notes = "Staff Notes: " . $this->bc_order_array['staff_notes'] . "\n\nCustomer Message: {$this->bc_order_array['customer_message']}";
         $this->order->promo_code = $this->bc_order_array['coupon_discount'];
         $this->order->sales_tax_amount = (float) ($this->bc_order_array['total_inc_tax'] - $this->bc_order_array['total_ex_tax']);
+        $this->order->status_id = $this->bc_order_array['status_id'];
 
         $this->add_shipping_address_and_ship_method();
         $this->add_items();
