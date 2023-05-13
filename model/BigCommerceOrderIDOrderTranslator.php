@@ -87,7 +87,7 @@ class BigCommerceOrderIDOrderTranslator {
             $response = $this->bc_api_client->get(['id' => [$this->order_data['customer_id']]]);
             $response_data = (array) json_decode($response->body, true);
             if (empty($response_data['data'])){
-                $msg = "An error occurred when looking up customer data.";
+                $msg = "An error occurred when looking up customer data for customer ID {$this->order_data['customer_id']}.\nPost body: {$response->body}";
                 $this->send_api_error($response, $this->bc_order_id, $msg);
                 throw new Exception($msg);
             }
@@ -142,12 +142,16 @@ class BigCommerceOrderIDOrderTranslator {
 
     private function send_api_error(RestApiResponse $response, mixed $order_id, string $message): void
     {
-        mail(
+        $this->write_to_log(
+            get_class($this) . '.log',
+            "Error Processing Graphtec America BigCommerce Order!\n{$message} \nOrder ID #{$order_id}\nStatus Code: {$response->status_code}\n"
+        );
+        /*mail(
             WEBMASTER_EMAIL,
             'Error Processing Graphtec America BigCommerce Order!',
             "{$message} \nOrder ID #{$order_id}\nStatus Code: {$response->status_code}\n",
             "From:no-reply@graphtecamericastore.com"
-        );
+        );*/
     }
     // end private functions
 
