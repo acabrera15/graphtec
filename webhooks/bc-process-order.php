@@ -2,7 +2,7 @@
 require_once ('../app.php');
 
 // log it for now
-file_put_contents('../logs/order-created-json.log', file_get_contents("php://input") . "\n", FILE_APPEND);
+file_put_contents('../logs/bc-process-order.log', file_get_contents("php://input") . "\n", FILE_APPEND);
 const IMPORT_STATUS_IDS = [
     8, // awaiting pickup
     9, // awaiting shipment
