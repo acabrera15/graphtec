@@ -133,7 +133,7 @@ class BigCommerceOrderIDOrderTranslator {
             'date_created' => date('T'),
             'email' => $this->shipping_address_data[0]['email'],
             'first_name' => $this->shipping_address_data[0]['first_name'],
-            'id' => time(),
+            'id' => 's-' . $this->shipping_address_data[0]['id'],
             'last_name' => $this->shipping_address_data[0]['last_name'],
             'notes' => 'Customer data generated from shipping address data for guest checkout',
             'phone' => $this->shipping_address_data[0]['phone']
