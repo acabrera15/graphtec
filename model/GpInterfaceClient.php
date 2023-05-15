@@ -252,6 +252,11 @@ class GpInterfaceClient {
                 }
             }
 
+            // some order statuses are okay to skip over
+            if (trim($msg) === 'The order no is duplicate.'){
+                return;
+            }
+
             throw new Exception("SEVERITY: {$result->NOTIFICATIONS->SEVERITY}\nMessages: $msg");
         }
     }
