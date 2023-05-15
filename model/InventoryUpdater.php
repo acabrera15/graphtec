@@ -4,6 +4,7 @@ class InventoryUpdater {
     use Logger;
 
     // private constants
+    private const BC_INVENTORY_TRACKING_VARIANT = 'variant';
     private const LOG = 'class.InventoryUpdater.log';
     private const NUM_PER_BATCH = 10;
     // end private constants
@@ -12,6 +13,7 @@ class InventoryUpdater {
     private BigCommerceRestApiClient    $bc_client;
     private GpInterfaceClient           $gp_client;
     private array                       $product_sku_map = [];
+    private array                       $product_variant_sku_map = [];
     // end private members
 
     // public functions
@@ -71,7 +73,17 @@ class InventoryUpdater {
 
                 foreach ($response_arr['data'] as $item){
                     if (!empty($item['sku'])){
-                        $this->product_sku_map[$item['sku']] = $item['id'];
+                        if (empty($item['inventory_tracking']) || $item['inventory_tracking'] !== self::BC_INVENTORY_TRACKING_VARIANT){
+                            $this->product_sku_map[$item['sku']] = $item['id'];
+                        } else {
+
+                            // we need to look up the variants
+                            $this->product_variant_sku_map[$item['sku']] = [
+                                'id' => $item['id'],
+                                'variants' => []
+                            ];
+
+                        }
                     }
                 }
             } else {
@@ -80,6 +92,32 @@ class InventoryUpdater {
         }
 
         echo "Mapped " . count($this->product_sku_map) . " SKUs to BigCommerce IDs.\n";
+
+        $this->build_product_variant_sku_map();
+    }
+
+    private function build_product_variant_sku_map(): void {
+        echo "Mapping product variants for inventory management...\n";
+        foreach ($this->product_variant_sku_map as $sku => $variant_data){
+            $this->bc_client->set_resource_name('catalog/products/' . $variant_data['id'] . '/variants');
+            $response = $this->bc_client->get(['page' => 1]);
+            if ($response->status_code === 200){
+                $response_arr = json_decode($response->body, true);
+                if (empty($response_arr['data'])){
+                    echo "ERROR: No product variant data\n";
+                    continue;
+                }
+                foreach ($response_arr['data'] as $variant){
+                    $this->product_variant_sku_map[$sku]['variants'][] = [
+                        'id' => $variant['id'],
+                        'sku' => $variant['sku']
+                    ];
+                    echo "\tAdded variant SKU {$variant['sku']} with ID {$variant['id']} to the variants map\n";
+                }
+            } else {
+                echo "ERROR: Received response code {$response->status_code} when querying variants for SKU {$sku}\n";
+            }
+        }
     }
 
     private function process_batch(array &$batch): void {
