@@ -35,7 +35,7 @@ if (
         $credentials->user_id = GP_USER_ID;
         $gp = new GpInterfaceClient($credentials);
         $gp->submit_order($order);
-        write_to_webhook_log("Status Code: 200 (success)");
+        write_to_webhook_log("Status Code: 200 (success)\n");
     } catch (Exception $e){
         http_response_code(500);
         echo "EXCEPTION: {$e->getMessage()}\n";
