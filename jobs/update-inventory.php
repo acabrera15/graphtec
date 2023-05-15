@@ -1,7 +1,7 @@
 <?php
 require_once(dirname(__FILE__) . '/../app.php');
 
-echo "\n\nSTART\n\n";
+echo "\n\n" . date('Y-m-d H:i:s') . " - START\n";
 
 $gp_credentials = new SoapCredentialsConfig();
 $gp_credentials->endpoint = GP_ENDPOINT_INQUIRY;
@@ -23,4 +23,4 @@ try {
     echo "EXCEPTION on line {$e->getLine()} of file {$e->getFile()}: {$e->getMessage()}\n";
 }
 
-echo "\n\nFINISH\n\n";
+echo "\n" . date('Y-m-d H:i:s') . " - FINISH\n\n";
