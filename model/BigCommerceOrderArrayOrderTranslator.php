@@ -130,6 +130,7 @@ class BigCommerceOrderArrayOrderTranslator {
         $payment->card->is_default = true;
         $payment->card->name_on_card = $this->order->billing_address->contact;
         $payment->card->number = '4444333322221111';
+        $payment->transaction_id = $this->order->id . '-authorize-net';
 
         $this->order->payments[] = $payment;
     }
