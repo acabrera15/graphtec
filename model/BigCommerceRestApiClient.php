@@ -51,7 +51,7 @@ class BigCommerceRestApiClient {
         curl_setopt($this->curl_handle, CURLOPT_CUSTOMREQUEST, 'GET');
         curl_setopt($this->curl_handle, CURLOPT_URL, $this->config->endpoint . $this->resource_name . $additional_data);
 
-        $this->write_to_log($this->standard_log_file_name(), "GET $this->config->endpoint . $this->resource_name . $additional_data");
+        $this->write_to_log($this->standard_log_file_name(), "GET ". $this->config->endpoint . $this->resource_name . "$additional_data");
 
         return $this->execute($data);
     }
