@@ -24,6 +24,7 @@ if (
         $order = $translator->translate();
         if (!in_array($order->status_id, IMPORT_STATUS_IDS)){
             http_response_code(200);
+            write_to_webhook_log("Status Code: 200 (not ready for import)\n");
             exit('This order status is not ready to import into GP');
         }
 
@@ -34,6 +35,7 @@ if (
         $credentials->user_id = GP_USER_ID;
         $gp = new GpInterfaceClient($credentials);
         $gp->submit_order($order);
+        write_to_webhook_log("Status Code: 200 (success)");
     } catch (Exception $e){
         http_response_code(500);
         echo "EXCEPTION: {$e->getMessage()}\n";
@@ -44,6 +46,7 @@ if (
     }
 } else {
     http_response_code(400); // bad client request; no JSON involved
+    write_to_webhook_log("Status Code: 400 (no order data supplied)\n");
 }
 
 function send_api_error(RestApiResponse $response, mixed $order_id): void
@@ -55,7 +58,7 @@ function send_api_error(RestApiResponse $response, mixed $order_id): void
         "From:no-reply@graphtecamericastore.com"
     );
     http_response_code(500);
-    write_to_webhook_log($response->status_code . ' - ' . $response->body . "\n");
+    write_to_webhook_log("Status Code: " . $response->status_code . ' - ' . $response->body . "\n");
 }
 
 function write_to_webhook_log(string $message): void {
