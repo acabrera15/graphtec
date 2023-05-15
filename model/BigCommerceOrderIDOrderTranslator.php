@@ -84,7 +84,7 @@ class BigCommerceOrderIDOrderTranslator {
             $bc_config->endpoint = BIGCOMMERCE_V3_API_ENDPOINT;
             $this->bc_api_client->set_config($bc_config);
             $this->bc_api_client->set_resource_name('customers');
-            $response = $this->bc_api_client->get(['id' => [$this->order_data['customer_id']]]);
+            $response = $this->bc_api_client->get(['id:in' => $this->order_data['customer_id']]);
             $response_data = (array) json_decode($response->body, true);
             if (empty($response_data['data'])){
                 $msg = "An error occurred when looking up customer data for customer ID {$this->order_data['customer_id']}.\nPost body: {$response->body}";
