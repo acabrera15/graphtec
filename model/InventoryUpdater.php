@@ -35,6 +35,7 @@ class InventoryUpdater {
         while (!empty($inventory)){
             $batch = [];
             foreach ($inventory as $key => $item){
+                echo "\t{$item->sku}...\n";
                 if (!empty($this->product_sku_map[$item->sku])){
                     $batch[] = [
                         'id' => $this->product_sku_map[$item->sku],
@@ -48,7 +49,7 @@ class InventoryUpdater {
                         $item->quantity
                     );
                 } else {
-                    echo "No product ID found for SKU {$item->sku}\n";
+                    echo "\tNo product ID found for SKU {$item->sku}\n";
                 }
                 unset($inventory[$key]);
 
@@ -127,7 +128,7 @@ class InventoryUpdater {
         }
     }
 
-    private function print_status_of_tracking(RestApiResponse $response, int $num_items){
+    private function print_status_of_tracking(RestApiResponse $response, int $num_items): void {
         echo match ($response->status_code) {
             $response::RESPONSE_CODE_CONFLICT => "ERROR: Product was in conflict with another\n",
             $response::RESPONSE_ENTITY_TOO_LARGE => "ERROR: Request entity too large\n",
