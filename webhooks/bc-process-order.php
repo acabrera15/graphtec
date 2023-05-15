@@ -24,7 +24,7 @@ if (
         $order = $translator->translate();
         if (!in_array($order->status_id, IMPORT_STATUS_IDS)){
             http_response_code(200);
-            write_to_webhook_log("Status Code: 200 (not ready for import)\n");
+            write_to_webhook_log("Status Code: 200 (not ready for import with status id {$order->status_id})\n");
             exit('This order status is not ready to import into GP');
         }
 
