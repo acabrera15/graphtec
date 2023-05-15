@@ -29,7 +29,9 @@ class InventoryUpdater {
     public function update_inventory(): void {
         $this->build_product_sku_map();
 
-        $inventory = $this->gp_client->query_inventory(GP_SITE_ID, array_keys($this->product_sku_map));
+        // unique SKUs
+        $unique_skus = array_merge(array_keys($this->product_sku_map), array_keys($this->product_variant_sku_map));
+        $inventory = $this->gp_client->query_inventory(GP_SITE_ID, $unique_skus);
         while (!empty($inventory)){
             $batch = [];
             foreach ($inventory as $key => $item){
@@ -39,6 +41,12 @@ class InventoryUpdater {
                         'inventory_level' => $item->quantity,
                         'inventory_tracking' => 'product'
                     ];
+                } elseif (!empty($this->product_variant_sku_map[$item->sku])){
+                    $this->process_variant(
+                        $this->product_variant_sku_map[$item->sku]['parent_id'],
+                        $this->product_variant_sku_map[$item->sku]['id'],
+                        $item->quantity
+                    );
                 } else {
                     echo "No product ID found for SKU {$item->sku}\n";
                 }
@@ -61,6 +69,7 @@ class InventoryUpdater {
         echo "Querying BigCommerce products to map GP SKUs to Big Commerce IDs...\n";
         $has_more_products = true;
         $page = 1;
+        $variant_ids = [];
         while ($has_more_products){
             $response = $this->bc_client->get(['page' => $page]);
             $response_arr = json_decode($response->body, true);
@@ -78,11 +87,7 @@ class InventoryUpdater {
                         } else {
 
                             // we need to look up the variants
-                            $this->product_variant_sku_map[$item['sku']] = [
-                                'id' => $item['id'],
-                                'variants' => []
-                            ];
-
+                            $variant_ids[$item['sku']] = $item['id'];
                         }
                     }
                 }
@@ -93,13 +98,13 @@ class InventoryUpdater {
 
         echo "Mapped " . count($this->product_sku_map) . " SKUs to BigCommerce IDs.\n";
 
-        $this->build_product_variant_sku_map();
+        $this->build_product_variant_sku_map($variant_ids);
     }
 
-    private function build_product_variant_sku_map(): void {
+    private function build_product_variant_sku_map(array $variant_ids): void {
         echo "Mapping product variants for inventory management...\n";
-        foreach ($this->product_variant_sku_map as $sku => $variant_data){
-            $this->bc_client->set_resource_name('catalog/products/' . $variant_data['id'] . '/variants');
+        foreach ($variant_ids as $sku => $id){
+            $this->bc_client->set_resource_name('catalog/products/' . $id . '/variants');
             $response = $this->bc_client->get(['page' => 1]);
             if ($response->status_code === 200){
                 $response_arr = json_decode($response->body, true);
@@ -108,8 +113,10 @@ class InventoryUpdater {
                     continue;
                 }
                 foreach ($response_arr['data'] as $variant){
-                    $this->product_variant_sku_map[$sku]['variants'][] = [
+                    $this->product_variant_sku_map[$variant['sku']] = [
                         'id' => $variant['id'],
+                        'parent_id' => $id,
+                        'parent_sku' => $sku,
                         'sku' => $variant['sku']
                     ];
                     echo "\tAdded variant SKU {$variant['sku']} with ID {$variant['id']} to the variants map\n";
@@ -120,23 +127,36 @@ class InventoryUpdater {
         }
     }
 
-    private function process_batch(array &$batch): void {
-        $response = $this->bc_client->put($batch);
+    private function print_status_of_tracking(RestApiResponse $response, int $num_items){
         echo match ($response->status_code) {
             $response::RESPONSE_CODE_CONFLICT => "ERROR: Product was in conflict with another\n",
             $response::RESPONSE_ENTITY_TOO_LARGE => "ERROR: Request entity too large\n",
             $response::RESPONSE_CODE_MULTI_STATUS => "PARTIAL-SUCCESS: Some items updated, while others failed. \n\nFull response: {$response->body}\n",
             $response::RESPONSE_CODE_NOT_FOUND => "ERROR: Resource not found\n",
-            $response::RESPONSE_CODE_OK => "SUCCESS: Updated inventory on " . count($batch) . " items\n",
+            $response::RESPONSE_CODE_OK => "SUCCESS: Updated inventory on {$num_items} items\n",
             $response::RESPONSE_CODE_UNPROCESSABLE_ENTITY => "ERROR: Unprocessable entity\n",
-            default => "ERROR: Unknown status returned\n",
+            default => "ERROR: Unknown status returned ({$response->status_code})\n",
         };
-        $batch = [];
 
         // log anything that wasn't successful
         if ($response->status_code !== $response::RESPONSE_CODE_OK){
             $this->write_to_log(self::LOG, "Error updating inventory ({$response->status_code}): {$response->body}\n");
         }
+    }
+
+    private function process_batch(array &$batch): void {
+        $this->bc_client->set_resource_name('catalog/products');
+        $response = $this->bc_client->put($batch);
+        $this->print_status_of_tracking($response, count($batch));
+        $batch = [];
+    }
+
+    private function process_variant(int $parent_id, int $id, int $inventory_level): void {
+        $this->bc_client->set_resource_name('catalog/products/' . $parent_id . '/variants/' . $id);
+        $response = $this->bc_client->put([
+            'inventory_level' => $inventory_level
+        ]);
+        $this->print_status_of_tracking($response, 1);
     }
 
     // end private functions
