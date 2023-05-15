@@ -91,8 +91,7 @@ class BigCommerceOrderIDOrderTranslator {
                 $this->send_api_error($response, $this->bc_order_id, $msg);
                 throw new Exception($msg);
             }
-            $this->customer_data = $response_data['data'];
-            $this->customer_data['id'] = $this->order_data['customer_id'];
+            $this->customer_data = $response_data['data'][0];
         } else {
             $this->initialize_guest_customer_data();
         }
