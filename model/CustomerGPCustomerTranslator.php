@@ -69,7 +69,7 @@ class CustomerGPCustomerTranslator {
                     'ADDR2' => $address->address2,
                     'ADDR3' => $address->address3,
                     'CITY' => $address->city,
-                    'STATE' => $address->state,
+                    'STATE' => $this->format_state_code($address->state, $address->country),
                     'ZIP' => $address->zip,
                     'COUNTRY' => $this->format_country_code($address->country),
                     'PHONE1' => $address->phone1,
@@ -90,7 +90,7 @@ class CustomerGPCustomerTranslator {
                 'ADDR2' => $address->address2,
                 'ADDR3' => $address->address3,
                 'CITY' => $address->city,
-                'STATE' => $address->state,
+                'STATE' => $this->format_state_code($address->state, $address->country),
                 'ZIP' => $address->zip,
                 'COUNTRY' => $this->format_country_code($address->country),
                 'PHONE1' => $address->phone1,
@@ -131,6 +131,21 @@ class CustomerGPCustomerTranslator {
             'se' => 'SWEDEN',
             default => 'USA',
         };
+    }
+
+    private function format_state_code(string $state, string $country_code): string {
+        $countries_arr = (array) json_decode(file_get_contents(dirname(__FILE__) . '/../data/us-canada-states.json'), true);
+        foreach ($countries_arr as $country_data){
+            if (strtoupper($country_data['abbreviation']) === strtoupper($country_code)){
+                foreach ($country_data['states'] as $state_data){
+                    if (strtolower($state_data['name']) === strtolower($state)){
+                        return $state_data['abbreviation'];
+                    }
+                }
+            }
+        }
+
+        return $state;
     }
     // end private functions
 
