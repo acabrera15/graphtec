@@ -14,7 +14,7 @@ class OrderTrackingUpdater {
         self::BC_ORDER_STATUS_AWTNG_PICKUP,
         self::BC_ORDER_STATUS_AWTNG_SHIPMENT
     ];
-    private const DAYS_BACK = 90;
+    private const DAYS_BACK = 30;
     private const GP_MAX_ORDERS_PER_REQUEST = 200;
     private const GP_ORDER_STATUS_SHIPPED = '3';
     private const SCRIPT_TIME_LIMIT = 7200;
