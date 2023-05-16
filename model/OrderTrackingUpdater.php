@@ -87,10 +87,16 @@ class OrderTrackingUpdater {
                                         'order_address_id' => $addresses[0]['id'],
                                         'tracking_number' => $tracking->tracking_number
                                     ];
-                                    foreach ($order->items as $item){
+
+                                    echo "\t\t\t\tLooking up products in the order to send over...\n";
+                                    $this->bc_client->set_resource_name('orders/' . $order->id . '/products');
+                                    $products_response = $this->bc_client->get([]);
+                                    $products = json_decode($products_response->body, true);
+                                    foreach ($products as $product){
                                         $shipment_data['items'][] = [
-                                            'order_product_id' => $item->product_id,
-                                            'quantity' => $item->quantity
+                                            'order_product_id' => $product['id'],
+                                            'product_id' => $product['product_id'],
+                                            'quantity' => $product['quantity']
                                         ];
                                     }
                                     $this->bc_client->set_resource_name('orders/' . $order->id . '/shipments');
