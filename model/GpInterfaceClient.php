@@ -13,9 +13,9 @@ class GpInterfaceClient {
     private const BC_ORDER_STATUS_PENDING = 1;
     private const BC_ORDER_STATUS_SHIPPED = 2;
     private const DEFAULT_PRCLEVEL = 'DEALER';
-    private const GP_ORDER_STATUS_PENDING = '1';
-    private const GP_ORDER_STATUS_PROCESSING = '2';
-    private const GP_ORDER_STATUS_SHIPPED = '3';
+    private const GP_ORDER_STATUS_PENDING = 'PENDING';
+    private const GP_ORDER_STATUS_PROCESSING = 'PROCESSING';
+    private const GP_ORDER_STATUS_SHIPPED = 'SHIPPED';
     private const LOG = 'class.GpInterfaceClient.log';
     private const SEVERITY_SUCCESS = 'SUCCESS';
     // end private constants
@@ -63,13 +63,14 @@ class GpInterfaceClient {
             ];
         }
         $result = $this->soap_call('getOrderStatus', $data);
-        $this->write_to_log(self::LOG, "\nORDER STATUSES: \n " . print_r($result, true) . "\n");
+        $this->write_to_log('update-order-tracking.log', "\tORDER STATUSES: " . print_r($result, true) . "\n");
         $this->check_response_for_errors($result);
         if (!empty($result->ORDERSTATUSES) && !empty($result->ORDERSTATUSES->ORDERSTATUS)){
             foreach ($result->ORDERSTATUSES->ORDERSTATUS as $gp_order){
 
                 // skip if it doesn't have a status
                 if (empty($gp_order->STATUS)){
+                    $this->write_to_log('update-order-tracking.log', "\t\tEmpty status for this order");
                     continue;
                 }
 
@@ -97,6 +98,8 @@ class GpInterfaceClient {
                 }
                 $return_arr[$order_status->order_id] = $order_status;
             }
+        } else {
+            $this->write_to_log('update-order-tracking.log', "\tNo statuses found for this batch.");
         }
 
         return $return_arr;
