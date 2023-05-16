@@ -98,10 +98,10 @@ class BigCommerceRestApiClient {
                 array_merge(RESTAPIResponse::SUCCESSFUL_RESPONSE_CODES, [RESTAPIResponse::RESPONSE_CODE_NOT_FOUND])
             )
         ):
-            $this->write_to_log('class.' . get_class($this) . '.log', $this->response->status_code . " received\n\tBody: "
+            $this->write_to_log($this->standard_log_file_name(), $this->response->status_code . " received\n\tBody: "
                 . $this->response->body . "\n\tRequest Header: " . curl_getinfo($this->curl_handle, CURLINFO_HEADER_OUT));
             if (in_array($this->response->status_code, self::VERBOSE_STATUS_CODE_RESPONSES)):
-                $this->write_to_log('class.' . get_class($this) . '.log', "Post Fields: "
+                $this->write_to_log($this->standard_log_file_name(), "Post Fields: "
                     . substr(json_encode($data), 0, 32768));
             endif;
         endif;

@@ -74,12 +74,17 @@ class OrderTrackingUpdater {
                         if (!empty($order_data[$order->id]->tracking)){
 
                             echo "\t\t\tIt has tracking info!\n";
-                            $this->bc_client->set_resource_name('orders/' . $order->id . '/shipments');
                             foreach($order_data[$order->id]->tracking as $tracking){
+
+                                $this->bc_client->set_resource_name('orders/' . $order->id . '/shipping_addresses');
+                                $addresses_response = $this->bc_client->get([]);
+                                $addresses = json_decode($addresses_response->body, true);
+                                echo "\t\t\t\tLooking up the order shipping addresses...\n";
+
                                 echo "\t\t\t\tSending over tracking number {$tracking->tracking_number}\n";
                                     $shipment_data = [
                                         'items' => [],
-                                        'order_address_id' => $order->shipping_address->id,
+                                        'order_address_id' => $addresses[0]['id'],
                                         'tracking_number' => $tracking->tracking_number
                                     ];
                                     foreach ($order->items as $item){
@@ -88,6 +93,7 @@ class OrderTrackingUpdater {
                                             'quantity' => $item->quantity
                                         ];
                                     }
+                                    $this->bc_client->set_resource_name('orders/' . $order->id . '/shipments');
                                     $shipment_response = $this->bc_client->post($shipment_data);
                                     if ($shipment_response->status_code === 201){
                                         echo "\t\t\t\t\tSUCCESS\n";
