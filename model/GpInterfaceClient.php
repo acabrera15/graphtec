@@ -63,6 +63,7 @@ class GpInterfaceClient {
             ];
         }
         $result = $this->soap_call('getOrderStatus', $data);
+        $this->write_to_log(self::LOG, "\nORDER STATUSES: \n " . print_r($result, true) . "\n");
         $this->check_response_for_errors($result);
         if (!empty($result->ORDERSTATUSES) && !empty($result->ORDERSTATUSES->ORDERSTATUS)){
             foreach ($result->ORDERSTATUSES->ORDERSTATUS as $gp_order){
