@@ -95,7 +95,6 @@ class OrderTrackingUpdater {
                                     foreach ($products as $product){
                                         $shipment_data['items'][] = [
                                             'order_product_id' => $product['id'],
-                                            'product_id' => $product['product_id'],
                                             'quantity' => $product['quantity']
                                         ];
                                     }
