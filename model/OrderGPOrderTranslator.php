@@ -16,7 +16,6 @@ class OrderGPOrderTranslator {
     private const DEFAULT_PAYMENT_TYPE = 'CREDIT_CARD';
     private const GP_SHIP_METHOD_BEST = 'BEST/PPA';
     private const PO_NUM_PREFIX = 'ECOM-';
-    private const SALES_TAX_SCHD = 'WEB';
     private const SHIP_METHOD_UPS_READY = 'upsready';
     // end private constants
 
@@ -50,11 +49,11 @@ class OrderGPOrderTranslator {
         $this->gp_order['DISCAMNT'] = $this->format_currency_value($this->order->discount_amount, $this->order->currency_code);
         $this->gp_order['SLSTAXAMNT'] = $this->format_currency_value($this->order->sales_tax_amount, $this->order->currency_code);
         $this->gp_order['FREIGHTAMNT'] = $this->format_currency_value($this->order->freight_amount, $this->order->currency_code);
-        $this->gp_order['TAXSCHD'] = $this->order->sales_tax_amount > 0.00001 ? self::SALES_TAX_SCHD : '';
+        $this->gp_order['TAXSCHD'] = $this->format_tax_schedule_id();
         $this->gp_order['CUSTCLASS'] = $this->gp_customer['CUSTCLASS'];
         $this->gp_order['ORDTYPE'] = self::DEFAULT_ORDER_TYPE;
         $this->gp_order['CUSTPONO'] = self::PO_NUM_PREFIX . $this->order->id;
-        $this->gp_order['SHPMTHD'] = self::GP_SHIP_METHOD_BEST;
+        $this->gp_order['SHPMTHD'] = $this->format_shipping_method();
         $this->gp_order['CUSTCARACCTNO'] = '';
         $this->gp_order['BILLTOADDRID'] = !empty($this->order->billing_address) ? $this->order->billing_address->id : '';
         $this->gp_order['SHIPTOADDRID'] = !empty($this->order->shipping_address) ? $this->order->shipping_address->id : '';
@@ -111,6 +110,43 @@ class OrderGPOrderTranslator {
         $date = $this->order->date ?? new DateTime();
 
         return self::BATCH_PREFIX . $date->format('mdy');
+    }
+
+    private function format_shipping_method(): string {
+        return match ($this->order->shipping_address->shipping_method) {
+            'FedEx (FedEx 2 Day)' => 'FEDX 2DAY/PPA',
+            'FedEx (FedEx Ground)' => 'FEDXGROUND/PPA',
+            'FedEx (FedEx Standard Overnight)' => 'FED-X/STD/PPA',
+            'UPS® (UPS 2nd Day Air®)' => 'UPS/2 DAY/PPA',
+            'UPS® (UPS® Ground)' => 'UPS/GND/PPA',
+            'UPS® (UPS Next Day Air®)' => 'UPS/NEXTDAY/PPA',
+            default => self::GP_SHIP_METHOD_BEST,
+        };
+
+    }
+
+    private function format_tax_schedule_id(): string {
+        if (
+            $this->order->sales_tax_amount < 0.00001
+            || empty($this->order->shipping_address)
+            || strtoupper($this->order->shipping_address->country) !== 'US'
+        ){
+            return '';
+        }
+
+        return match (strtoupper($this->order->shipping_address->state)) {
+            'CA', 'CALIFORNIA' => 'WEB-CA',
+            'FL', 'FLORIDA' => 'WEB-FL',
+            'KY', 'KENTUCKY' => 'WEB-KY',
+            'MA', 'MASSACHUSETTS' => 'WEB-MA',
+            'NJ', 'NEW JERSEY' => 'WEB-NJ',
+            'OH', 'OHIO' => 'WEB-OH',
+            'TN', 'TENNESSEE' => 'WEB-TN',
+            'WA', 'WASHINGTON' => 'WEB-WA',
+            'WI', 'WISCONSIN' => 'WEB-WI',
+            default => '',
+        };
+
     }
 
     private function notes(): string {

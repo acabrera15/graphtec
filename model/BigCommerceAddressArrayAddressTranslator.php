@@ -40,6 +40,7 @@ class BigCommerceAddressArrayAddressTranslator {
         $this->address->is_default_billing = true;
         $this->address->is_default_shipping = false;
         $this->address->phone1 = $this->bc_address_arr['phone'];
+        $this->address->shipping_method = $this->bc_address_arr['shipping_method'] ?? null;
         $this->address->state = $this->bc_address_arr['state'];
         $this->address->type = !empty($this->bc_address_arr['company'])
             ? $this->address::TYPE_COMMERCIAL : $this->address::TYPE_RESIDENTIAL;

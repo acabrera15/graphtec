@@ -20,6 +20,7 @@ class Address {
     public ?string  $phone1 = null;
     public ?string  $phone2 = null;
     public ?string  $phone3 = null;
+    public ?string  $shipping_method = null;
     public ?string  $state = null;
     public string   $type = self::TYPE_COMMERCIAL;
     public ?string  $zip = null;
