@@ -126,27 +126,35 @@ class OrderGPOrderTranslator {
     }
 
     private function format_tax_schedule_id(): string {
-        if (
-            $this->order->sales_tax_amount < 0.00001
-            || empty($this->order->shipping_address)
-            || strtoupper($this->order->shipping_address->country) !== 'US'
-        ){
+        if ($this->order->sales_tax_amount < 0.00001){
             return '';
         }
 
-        return match (strtoupper($this->order->shipping_address->state)) {
-            'CA', 'CALIFORNIA' => 'WEB-CA',
-            'FL', 'FLORIDA' => 'WEB-FL',
-            'KY', 'KENTUCKY' => 'WEB-KY',
-            'MA', 'MASSACHUSETTS' => 'WEB-MA',
-            'NJ', 'NEW JERSEY' => 'WEB-NJ',
-            'OH', 'OHIO' => 'WEB-OH',
-            'TN', 'TENNESSEE' => 'WEB-TN',
-            'WA', 'WASHINGTON' => 'WEB-WA',
-            'WI', 'WISCONSIN' => 'WEB-WI',
-            default => '',
-        };
-
+        if (!empty($this->order->shipping_address)){
+            return match (strtoupper($this->order->shipping_address->state)) {
+                'FL', 'FLORIDA' => 'WEB-FL',
+                'KY', 'KENTUCKY' => 'WEB-KY',
+                'MA', 'MASSACHUSETTS' => 'WEB-MA',
+                'NJ', 'NEW JERSEY' => 'WEB-NJ',
+                'OH', 'OHIO' => 'WEB-OH',
+                'TN', 'TENNESSEE' => 'WEB-TN',
+                'WA', 'WASHINGTON' => 'WEB-WA',
+                'WI', 'WISCONSIN' => 'WEB-WI',
+                default => 'WEB-CA',
+            };
+        } else {
+            return match (strtoupper($this->order->billing_address->state)) {
+                'FL', 'FLORIDA' => 'WEB-FL',
+                'KY', 'KENTUCKY' => 'WEB-KY',
+                'MA', 'MASSACHUSETTS' => 'WEB-MA',
+                'NJ', 'NEW JERSEY' => 'WEB-NJ',
+                'OH', 'OHIO' => 'WEB-OH',
+                'TN', 'TENNESSEE' => 'WEB-TN',
+                'WA', 'WASHINGTON' => 'WEB-WA',
+                'WI', 'WISCONSIN' => 'WEB-WI',
+                default => 'WEB-CA',
+            };
+        }
     }
 
     private function notes(): string {
