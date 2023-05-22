@@ -64,11 +64,6 @@ class BigCommerceOrderIDOrderTranslator {
         $this->bc_api_client->set_resource_name('orders/' . $this->bc_order_id . '/shipping_addresses');
         $response = $this->bc_api_client->get([]);
         $this->shipping_address_data = (array) json_decode($response->body, true);
-        if (empty($this->shipping_address_data)){
-            $msg = "An error occurred when looking up order shipping addresses.";
-            $this->send_api_error($response, $this->bc_order_id, $msg);
-            throw new Exception($msg);
-        }
 
         $this->fetch3_customer_data();
     }
@@ -125,18 +120,34 @@ class BigCommerceOrderIDOrderTranslator {
     }
 
     private function initialize_guest_customer_data(): void {
-        $this->customer_data = [
-            'addresses' => $this->shipping_address_data,
-            'company' => $this->shipping_address_data[0]['company'],
-            'customer_group_id' => 0,
-            'date_created' => date('T'),
-            'email' => $this->shipping_address_data[0]['email'],
-            'first_name' => $this->shipping_address_data[0]['first_name'],
-            'id' => 'S-' . $this->shipping_address_data[0]['id'],
-            'last_name' => $this->shipping_address_data[0]['last_name'],
-            'notes' => 'Customer data generated from shipping address data for guest checkout',
-            'phone' => $this->shipping_address_data[0]['phone']
-        ];
+        if (!empty($this->shipping_address_data)){
+            $this->customer_data = [
+                'addresses' => $this->shipping_address_data,
+                'company' => $this->shipping_address_data[0]['company'],
+                'customer_group_id' => 0,
+                'date_created' => date('T'),
+                'email' => $this->shipping_address_data[0]['email'],
+                'first_name' => $this->shipping_address_data[0]['first_name'],
+                'id' => 'S-' . $this->shipping_address_data[0]['id'],
+                'last_name' => $this->shipping_address_data[0]['last_name'],
+                'notes' => 'Customer data generated from shipping address data for guest checkout',
+                'phone' => $this->shipping_address_data[0]['phone']
+            ];
+        } else {
+            $this->customer_data = [
+                'addresses' => [$this->order_data['billing_address']],
+                'company' => $this->order_data['billing_address']['company'],
+                'customer_group_id' => 0,
+                'date_created' => date('T'),
+                'email' => $this->order_data['billing_address']['email'],
+                'first_name' => $this->order_data['billing_address']['first_name'],
+                'id' => 'S-' . $this->order_data['billing_address']['id'],
+                'last_name' => $this->order_data['billing_address']['last_name'],
+                'notes' => 'Customer data generated from shipping address data for guest checkout',
+                'phone' => $this->order_data['billing_address']['phone']
+            ];
+        }
+
     }
 
     private function send_api_error(RestApiResponse $response, mixed $order_id, string $message): void
