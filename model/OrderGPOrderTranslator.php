@@ -56,7 +56,7 @@ class OrderGPOrderTranslator {
         $this->gp_order['SHPMTHD'] = $this->format_shipping_method();
         $this->gp_order['CUSTCARACCTNO'] = '';
         $this->gp_order['BILLTOADDRID'] = !empty($this->order->billing_address) ? $this->order->billing_address->id : '';
-        $this->gp_order['SHIPTOADDRID'] = !empty($this->order->shipping_address) ? $this->order->shipping_address->id : '';
+        $this->gp_order['SHIPTOADDRID'] = !empty($this->order->shipping_address) ? $this->order->shipping_address->id : $this->order->billing_address->id;
         $this->gp_order['PAYTERM'] = self::DEFAULT_PAYMENT_TERM;
         $this->gp_order['PAYTYPE'] = self::DEFAULT_PAYMENT_TYPE;
         $this->gp_order['PROMOID'] = $this->order->promo_code;
