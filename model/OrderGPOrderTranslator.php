@@ -116,10 +116,14 @@ class OrderGPOrderTranslator {
         return match ($this->order->shipping_address->shipping_method) {
             'FedEx (FedEx 2 Day)' => 'FEDX 2DAY/PPA',
             'FedEx (FedEx Ground)' => 'FEDXGROUND/PPA',
+            'FedEx (FedEx International Economy)' => 'FEDXINTLECONPPA ',
+            'FedEx (FedEx International Priority)' => 'FEX/PRI/INTL/PP ',
             'FedEx (FedEx Standard Overnight)' => 'FED-X/STD/PPA',
             'UPS® (UPS 2nd Day Air®)' => 'UPS/2 DAY/PPA',
             'UPS® (UPS® Ground)' => 'UPS/GND/PPA',
             'UPS® (UPS Next Day Air®)' => 'UPS/NEXTDAY/PPA',
+            'UPS® (UPS Worldwide Expedited®)' => 'UPSINTLWEXP/PPA',
+            'UPS® (UPS Worldwide Saver®)' => 'UPSINTLWSAV/PPA',
             default => self::GP_SHIP_METHOD_BEST,
         };
 
