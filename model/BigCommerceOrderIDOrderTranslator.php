@@ -6,6 +6,8 @@ class BigCommerceOrderIDOrderTranslator {
     // private members
     private BigCommerceRestApiClient    $bc_api_client;
     private string                      $bc_order_id;
+    private ?string                     $coupon_code = null;
+
     private array                       $customer_data = [];
     private Order                       $order;
     private array                       $order_data = [];
@@ -32,7 +34,8 @@ class BigCommerceOrderIDOrderTranslator {
             $this->order_data,
             $this->shipping_address_data,
             $this->customer_data,
-            $this->order_products_data
+            $this->order_products_data,
+            $this->coupon_code
         );
         $this->order = $translator->translate();
 
@@ -109,6 +112,19 @@ class BigCommerceOrderIDOrderTranslator {
             $msg = "An error occurred when looking up order product data.";
             $this->send_api_error($response, $this->bc_order_id, $msg);
             throw new Exception($msg);
+        }
+
+        $this->fetch5_coupon_data();
+    }
+
+    private function fetch5_coupon_data(): void {
+        if (abs($this->order_data['coupon_discount']) > 0.0001){
+            $this->bc_api_client->set_resource_name('orders/' . $this->bc_order_id . '/coupons');
+            $response = $this->bc_api_client->get([]);
+            $response_data = (array) json_decode($response->body, true);
+            if (!empty($response_data)){
+                $this->coupon_code = $response_data[0]['code'];
+            }
         }
     }
 

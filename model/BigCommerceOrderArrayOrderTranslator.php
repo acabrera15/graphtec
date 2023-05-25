@@ -9,9 +9,16 @@ class BigCommerceOrderArrayOrderTranslator {
     // end private members
 
     // public functions
-    public function __construct(array $bc_order_array, array $bc_shipping_addresses, array $bc_customer_array, array $bc_order_products){
+    public function __construct(
+        array $bc_order_array,
+        array $bc_shipping_addresses,
+        array $bc_customer_array,
+        array $bc_order_products,
+        ?string $coupon_code
+    ){
         $this->bc_order_array = $bc_order_array;
         $this->bc_order_array['shipping_addresses'] = $bc_shipping_addresses;
+        $this->bc_order_array['coupon_code'] = $coupon_code;
         $this->bc_order_array['customer'] = $bc_customer_array;
         $this->bc_order_array['products'] = $bc_order_products;
 
@@ -31,10 +38,10 @@ class BigCommerceOrderArrayOrderTranslator {
         $this->order->id = (string) $this->bc_order_array['id'];
         $this->order->currency_code = $this->bc_order_array['currency_code'];
         $this->order->date = new DateTime($this->bc_order_array['date_created']);
-        $this->order->discount_amount = (float) $this->bc_order_array['discount_amount'];
+        $this->order->discount_amount = (float) $this->bc_order_array['discount_amount'] + (float) $this->bc_order_array['coupon_discount'];
         $this->order->freight_amount = (float) $this->bc_order_array['shipping_cost_ex_tax'];
         $this->order->notes = "Staff Notes: " . $this->bc_order_array['staff_notes'] . "\n\nCustomer Message: {$this->bc_order_array['customer_message']}";
-        $this->order->promo_code = $this->bc_order_array['coupon_discount'];
+        $this->order->promo_code = $this->bc_order_array['coupon_code'];
         $this->order->sales_tax_amount = (float) ($this->bc_order_array['total_inc_tax'] - $this->bc_order_array['total_ex_tax']);
         $this->order->status_id = $this->bc_order_array['status_id'];
 
