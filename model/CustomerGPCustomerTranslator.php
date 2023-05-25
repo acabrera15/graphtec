@@ -4,9 +4,10 @@ class CustomerGPCustomerTranslator {
     use Logger;
 
     // private constants
-    private const CUST_ID_PREFIX = 'E-';
+    //private const CUST_ID_PREFIX = 'E-'; // was used when a unique customer ID was assigned to each individual customer
+    private const CUSTOMER_ID = 'ECOM9999';
     private const DEFAULT_SHIP_METHOD = 'BEST/PPA';
-    private const GUEST_ID_PREFIX = 'G-';
+    //private const GUEST_ID_PREFIX = 'G-';  // was used when a unique customer ID was assigned to each individual customer
     // end private constants
 
     // private members
@@ -17,16 +18,16 @@ class CustomerGPCustomerTranslator {
     // public functions
     public function __construct(Customer $customer, string $guest_checkout_id = null){
         $this->customer = $customer;
-        if (empty($customer->id) && !empty($guest_checkout_id)){
+        /*if (empty($customer->id) && !empty($guest_checkout_id)){
             $this->customer->id = self::GUEST_ID_PREFIX . $guest_checkout_id;
-        }
+        }*/
 
         $this->write_to_log(get_class($this) . '.log', print_r($this->customer, true) . "Guest checkout ID: {$guest_checkout_id}\n\n");
     }
 
     public function translate(): array {
 
-        $this->gp_customer['GPCUSTID'] = self::CUST_ID_PREFIX . $this->customer->id;
+        $this->gp_customer['GPCUSTID'] = self::CUSTOMER_ID;
         $this->gp_customer['NAME'] = !empty($this->customer->name) ? $this->customer->name : 'Guest Checkout';
         $this->gp_customer['CUSTCLASS'] = $this->customer->class;
         $this->gp_customer['PRCLEVEL'] = $this->customer->price_level;
