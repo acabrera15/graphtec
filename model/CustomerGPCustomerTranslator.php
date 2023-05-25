@@ -61,7 +61,7 @@ class CustomerGPCustomerTranslator {
 
             // add an extra entry if it's the primary
             if ($this->customer->primary_address()->id === $address->id){
-                $this->gp_customer['ADDRESSES'][] = ['ADDRESS' => [
+                /*$this->gp_customer['ADDRESSES'][] = ['ADDRESS' => [
                     'GPCUSTID' => $this->gp_customer['GPCUSTID'],
                     'ADDRID' => 'PRIMARY',
                     'ADDRTYPE' => $address->type,
@@ -77,6 +77,25 @@ class CustomerGPCustomerTranslator {
                     'PHONE2' => $address->phone2,
                     'PHONE3' => $address->phone3,
                     'FAX' => $address->fax,
+                    'SHIPMTHD' => self::DEFAULT_SHIP_METHOD
+
+                ]];*/
+                $this->gp_customer['ADDRESSES'][] = ['ADDRESS' => [
+                    'GPCUSTID' => $this->gp_customer['GPCUSTID'],
+                    'ADDRID' => 'PRIMARY',
+                    'ADDRTYPE' => Address::TYPE_COMMERCIAL,
+                    'CONTACT' => 'Graphtec America Web Customer',
+                    'ADDR1' => '17462 Armstrong Ave',
+                    'ADDR2' => '',
+                    'ADDR3' => '',
+                    'CITY' => 'Irvine',
+                    'STATE' => 'CA',
+                    'ZIP' => '92614',
+                    'COUNTRY' => 'USA',
+                    'PHONE1' => '(949) 770-6010',
+                    'PHONE2' => '',
+                    'PHONE3' => '',
+                    'FAX' => '',
                     'SHIPMTHD' => self::DEFAULT_SHIP_METHOD
 
                 ]];
