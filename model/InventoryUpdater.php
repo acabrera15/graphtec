@@ -105,6 +105,7 @@ class InventoryUpdater {
     private function build_product_variant_sku_map(array $variant_ids): void {
         echo "Mapping product variants for inventory management...\n";
         foreach ($variant_ids as $sku => $id){
+            $sku = trim($sku);
             $this->bc_client->set_resource_name('catalog/products/' . $id . '/variants');
             $response = $this->bc_client->get(['page' => 1]);
             if ($response->status_code === 200){
@@ -114,6 +115,8 @@ class InventoryUpdater {
                     continue;
                 }
                 foreach ($response_arr['data'] as $variant){
+                    $variant['sku'] = trim($variant['sku']);
+
                     $this->product_variant_sku_map[$variant['sku']] = [
                         'id' => $variant['id'],
                         'parent_id' => $id,
