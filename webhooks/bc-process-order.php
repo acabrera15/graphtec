@@ -62,6 +62,6 @@ function send_api_error(RestApiResponse $response, mixed $order_id): void
 }
 
 function write_to_webhook_log(string $message): void {
-    file_put_contents('../logs/bc-process-order.log', date('Y-m-d H:i:s') . " - {$message}\n", FILE_APPEND);
+    file_put_contents(sys_get_temp_dir() . '/bc-process-order.log', date('Y-m-d H:i:s') . " - {$message}\n", FILE_APPEND);
 }
 
