@@ -114,11 +114,11 @@ class OrderGPOrderTranslator {
 
     private function format_shipping_method(): string {
         return match ($this->order->shipping_address->shipping_method) {
-            'FedEx (FedEx 2 Day)' => 'FEDX 2DAY/PPA',
-            'FedEx (FedEx Ground)' => 'FEDXGROUND/PPA',
-            'FedEx (FedEx International Economy)' => 'FEDXINTLECONPPA ',
-            'FedEx (FedEx International Priority)' => 'FEX/PRI/INTL/PP ',
-            'FedEx (FedEx Standard Overnight)' => 'FED-X/STD/PPA',
+            'FedEx (2 Day)' => 'FEDX 2DAY/PPA',
+            'FedEx (Ground)' => 'FEDXGROUND/PPA',
+            'FedEx (International Economy)' => 'FEDXINTLECONPPA ',
+            'FedEx (International Priority)' => 'FEX/PRI/INTL/PP ',
+            'FedEx (Standard Overnight)' => 'FED-X/STD/PPA',
             'UPS® (UPS 2nd Day Air®)' => 'UPS/2 DAY/PPA',
             'UPS® (UPS® Ground)' => 'UPS/GND/PPA',
             'UPS® (UPS Next Day Air®)' => 'UPS/NEXTDAY/PPA',
