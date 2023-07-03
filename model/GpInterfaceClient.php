@@ -271,7 +271,7 @@ class GpInterfaceClient {
     private function init_client(): void {
         $this->client = new SoapClient(
             $this->config->endpoint,
-            ['connection_timeout' => 10, 'exceptions' => 1, 'trace' => 1, 'verify_peer' => false]
+            ['connection_timeout' => 30, 'exceptions' => 1, 'trace' => 1, 'verify_peer' => false]
         );
     }
 
