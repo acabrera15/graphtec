@@ -18,9 +18,12 @@ if (
     && !empty($request_arr['data']['type'])
     && $request_arr['data']['type'] === 'order'
     && !empty($request_arr['data']['id'])
+    && !empty($request_arr['producer'])
 ){
+
     try {
-        $translator = new BigCommerceOrderIDOrderTranslator((string) $request_arr['data']['id']);
+        $bc_config = producer_to_bc_config($request_arr['producer']);
+        $translator = new BigCommerceOrderIDOrderTranslator((string) $request_arr['data']['id'], $bc_config);
         $order = $translator->translate();
         if (!in_array($order->status_id, IMPORT_STATUS_IDS)){
             http_response_code(200);
@@ -33,7 +36,7 @@ if (
         $credentials->endpoint = GP_ENDPOINT_ORDER;
         $credentials->password = GP_PASSWORD;
         $credentials->user_id = GP_USER_ID;
-        $gp = new GpInterfaceClient($credentials);
+        $gp = new GpInterfaceClient($credentials, $bc_config->store_id);
         $gp->submit_order($order);
         write_to_webhook_log("Status Code: 200 (success)\n");
     } catch (Exception $e){
@@ -46,7 +49,26 @@ if (
     }
 } else {
     http_response_code(400); // bad client request; no JSON involved
-    write_to_webhook_log("Status Code: 400 (no order data supplied)\n");
+    write_to_webhook_log("Status Code: 400 (missing required data)\n");
+}
+
+function producer_to_bc_config(string $producer): BigCommerceApiCredentialsConfig {
+    $config = new BigCommerceApiCredentialsConfig();
+    switch ($producer){
+        case 'stores/' . BIGCOMMERCE_STORE_ID_INSTRUMENTS:
+            $config->access_token = BIGCOMMERCE_API_INSTR_ACCESS_TOKEN;
+            $config->client_id = BIGCOMMERCE_API_INSTR_CLIENT_ID;
+            $config->client_secret = BIGCOMMERCE_API_INSTR_CLIENT_SECRET;
+            $config->store_id = BIGCOMMERCE_STORE_ID_INSTRUMENTS;
+            break;
+        default:
+            $config->access_token = BIGCOMMERCE_API_ACCESS_TOKEN;
+            $config->client_id = BIGCOMMERCE_API_CLIENT_ID;
+            $config->client_secret = BIGCOMMERCE_API_CLIENT_SECRET;
+            $config->store_id = BIGCOMMERCE_STORE_ID_MAIN;
+    }
+
+    return $config;
 }
 
 function send_api_error(RestApiResponse $response, mixed $order_id): void

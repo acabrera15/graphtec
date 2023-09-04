@@ -4,19 +4,20 @@ class BigCommerceOrderIDOrderTranslator {
     use Logger;
 
     // private members
-    private BigCommerceRestApiClient    $bc_api_client;
-    private string                      $bc_order_id;
-    private ?string                     $coupon_code = null;
-
-    private array                       $customer_data = [];
-    private Order                       $order;
-    private array                       $order_data = [];
-    private array                       $order_products_data = [];
-    private array                       $shipping_address_data = [];
+    private BigCommerceRestApiClient            $bc_api_client;
+    private BigCommerceApiCredentialsConfig     $bc_credentials;
+    private string                              $bc_order_id;
+    private ?string                             $coupon_code = null;
+    private array                               $customer_data = [];
+    private Order                               $order;
+    private array                               $order_data = [];
+    private array                               $order_products_data = [];
+    private array                               $shipping_address_data = [];
     // end private members
 
     // public functions
-    public function __construct(string $bc_order_id){
+    public function __construct(string $bc_order_id, BigCommerceApiCredentialsConfig $bc_credentials){
+        $this->bc_credentials = $bc_credentials;
         $this->bc_order_id = $bc_order_id;
         $this->order = new Order();
         $this->initialize_client();
@@ -77,10 +78,6 @@ class BigCommerceOrderIDOrderTranslator {
     private function fetch3_customer_data(): void {
 
         if (!empty($this->order_data['customer_id'])){
-            $bc_config = new ApiCredentialsConfig();
-            $bc_config->access_token = BIGCOMMERCE_API_ACCESS_TOKEN;
-            $bc_config->endpoint = BIGCOMMERCE_V3_API_ENDPOINT;
-            $this->bc_api_client->set_config($bc_config);
             $this->bc_api_client->set_resource_name('customers');
             $response = $this->bc_api_client->get(['id:in' => $this->order_data['customer_id']]);
             $response_data = (array) json_decode($response->body, true);
@@ -101,10 +98,6 @@ class BigCommerceOrderIDOrderTranslator {
      * @throws Exception
      */
     private function fetch4_order_products_data(): void {
-        $bc_config = new ApiCredentialsConfig();
-        $bc_config->access_token = BIGCOMMERCE_API_ACCESS_TOKEN;
-        $bc_config->endpoint = BIGCOMMERCE_V2_API_ENDPOINT;
-        $this->bc_api_client->set_config($bc_config);
         $this->bc_api_client->set_resource_name('orders/' . $this->bc_order_id . '/products');
         $response = $this->bc_api_client->get([]);
         $this->order_products_data = (array) json_decode($response->body, true);
@@ -129,10 +122,7 @@ class BigCommerceOrderIDOrderTranslator {
     }
 
     private function initialize_client(): void {
-        $bc_config = new ApiCredentialsConfig();
-        $bc_config->access_token = BIGCOMMERCE_API_ACCESS_TOKEN;
-        $bc_config->endpoint = BIGCOMMERCE_V2_API_ENDPOINT;
-        $this->bc_api_client = new BigCommerceRestApiClient($bc_config, 'orders/' . $this->bc_order_id);
+        $this->bc_api_client = new BigCommerceRestApiClient($this->bc_credentials, 'orders/' . $this->bc_order_id);
     }
 
     private function initialize_guest_customer_data(): void {

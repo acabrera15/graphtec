@@ -24,6 +24,7 @@ class GpInterfaceClient {
     private SoapClient              $client;
     private SoapCredentialsConfig   $config;
     private string                  $message = '';
+    private string                  $store_id;
     // end private members
 
     // public functions
@@ -33,9 +34,10 @@ class GpInterfaceClient {
     /**
      * @throws SoapFault
      */
-    public function __construct(SoapCredentialsConfig $config){
+    public function __construct(SoapCredentialsConfig $config, string $store_id){
         $this->config = $config;
         $this->init_client();
+        $this->store_id = $store_id;
     }
 
     /**
@@ -52,7 +54,7 @@ class GpInterfaceClient {
             'ORDERSTATUSES' => []
         ];
         foreach ($orders as $order){
-            $translator = new OrderGPOrderTranslator($order);
+            $translator = new OrderGPOrderTranslator($order, $this->store_id);
             $gp_order_arr = $translator->translate();
             $data['ORDERSTATUSES'][] = [
                 'ORDERSTATUS' => [
@@ -75,7 +77,7 @@ class GpInterfaceClient {
                 }
 
                 $order_status = new OrderStatus();
-                $order_status->order_id = $this->gp_order_number_to_order_id($gp_order->ORDNO);
+                $order_status->order_id = $this->gp_order_number_to_order_id($gp_order->ORDNO, $this->store_id);
                 $order_status->status = self::BC_ORDER_STATUS_AWTNG_FLFLLMNT;
                 $order_status->tracking = [];
                 switch ($gp_order->STATUS){
@@ -186,7 +188,7 @@ class GpInterfaceClient {
             'CUSTOMER' => $customer_translator->translate()
         ];
 
-        $order_translator = new OrderGPOrderTranslator($order);
+        $order_translator = new OrderGPOrderTranslator($order, $this->store_id);
         $order_data = [
             'AUTHENTICATION' => $this->authentication_array(),
             'SALESORDER' => $order_translator->translate()

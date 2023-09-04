@@ -14,14 +14,15 @@ class BigCommerceRestApiClient {
     // end private constants
 
     // private members
-    private ApiCredentialsConfig    $config;
+    private BigCommerceApiCredentialsConfig    $config;
     private ?CurlHandle             $curl_handle = null;
     private RestApiResponse         $response;
     private string                  $resource_name;
     // end private members
     
     // public functions
-    public function set_config(ApiCredentialsConfig $config): void {
+    public function get_config(): BigCommerceApiCredentialsConfig { return $this->config; }
+    public function set_config(BigCommerceApiCredentialsConfig $config): void {
         $this->config = $config;
         $this->set_up_curl_resource();
     }
@@ -29,7 +30,7 @@ class BigCommerceRestApiClient {
         $this->resource_name = $resource_name;
         $this->set_up_curl_resource();
     }
-    public function __construct(ApiCredentialsConfig $config, string $resource_name){
+    public function __construct(BigCommerceApiCredentialsConfig $config, string $resource_name){
         $this->response = new RestApiResponse();
         $this->config = $config;
         $this->resource_name = $resource_name;
@@ -49,9 +50,9 @@ class BigCommerceRestApiClient {
         $additional_data = !empty($data) ? '?' . http_build_query($data) : '';
 
         curl_setopt($this->curl_handle, CURLOPT_CUSTOMREQUEST, 'GET');
-        curl_setopt($this->curl_handle, CURLOPT_URL, $this->config->endpoint . $this->resource_name . $additional_data);
+        curl_setopt($this->curl_handle, CURLOPT_URL, $this->resource_to_endpoint_root() . $this->resource_name . $additional_data);
 
-        $this->write_to_log($this->standard_log_file_name(), "GET ". $this->config->endpoint . $this->resource_name . "$additional_data");
+        $this->write_to_log($this->standard_log_file_name(), "GET ". $this->resource_to_endpoint_root() . $this->resource_name . "$additional_data");
 
         return $this->execute($data);
     }
@@ -109,8 +110,19 @@ class BigCommerceRestApiClient {
         return $this->response;
     }
 
+    private function resource_to_endpoint_root(): string {
+
+        if (str_starts_with($this->resource_name, 'orders')){
+            return $this->config->v2_endpoint_root();
+        } else if (str_starts_with($this->resource_name, 'shipping/zones')){
+            return $this->config->v2_endpoint_root();
+        }
+
+        return $this->config->v3_endpoint_root();
+    }
+
     private function set_up_curl_resource(): void {
-        $this->curl_handle = curl_init($this->config->endpoint . $this->resource_name);
+        $this->curl_handle = curl_init($this->resource_to_endpoint_root() . $this->resource_name);
         curl_setopt($this->curl_handle, CURLOPT_HTTPHEADER, [
             'Accept: application/json',
             'Content-Type: application/json',

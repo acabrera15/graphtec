@@ -143,7 +143,7 @@ class OrderTrackingUpdater {
             foreach ($response_arr as $order_data_arr){
                 if (in_array($order_data_arr['status_id'], self::BC_UNSHIPPED_ORDER_STATUSES)){
 
-                    $translator = new BigCommerceOrderIDOrderTranslator((string) $order_data_arr['id']);
+                    $translator = new BigCommerceOrderIDOrderTranslator((string) $order_data_arr['id'], $this->bc_client->get_config());
                     try {
                         $this->pending_bc_orders[] = $translator->translate();
                         echo "\tFound order ID {$order_data_arr['id']} with status_id {$order_data_arr['status_id']}\n";

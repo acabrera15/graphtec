@@ -28,7 +28,7 @@ class GpInterfaceClientTest extends Testcase {
         parent::__construct($name, $data, $dataName);
 
         try {
-            $this->gp_client = new GpInterfaceClient($this->gp_config());
+            $this->gp_client = new GpInterfaceClient($this->gp_config(), BIGCOMMERCE_STORE_ID_MAIN);
         } catch (Exception){
             static::fail();
         }

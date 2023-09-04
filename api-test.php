@@ -1,16 +1,15 @@
 <?php
 require_once('app.php');
 
-$config = new ApiCredentialsConfig();
+$config = new BigCommerceApiCredentialsConfig();
 $config->access_token = BIGCOMMERCE_API_ACCESS_TOKEN;
 $config->client_id = BIGCOMMERCE_API_CLIENT_ID;
 $config->client_secret = BIGCOMMERCE_API_CLIENT_SECRET;
-$config->endpoint = BIGCOMMERCE_V3_API_ENDPOINT;
+$config->store_id = BIGCOMMERCE_STORE_ID_MAIN;
 
 /*$api_client = new BigCommerceRestApiClient($config, 'catalog/products');
 print_r($api_client->get([])->body);*/
 
-$config->endpoint = BIGCOMMERCE_V2_API_ENDPOINT;
 $api_client = new BigCommerceRestApiClient($config, 'orders/21549');
 print_r($api_client->get([]));
 //exit();

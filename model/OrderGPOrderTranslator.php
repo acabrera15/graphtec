@@ -20,14 +20,16 @@ class OrderGPOrderTranslator {
     // end private constants
 
     // private members
-    private Order $order;
-    private array $gp_customer;
-    private array $gp_order = [];
+    private Order   $order;
+    private array   $gp_customer;
+    private array   $gp_order = [];
+    private string  $store_id;
     // end private members
 
     // public functions
-    public function __construct(Order $order){
+    public function __construct(Order $order, string $store_id){
         $this->order = $order;
+        $this->store_id = $store_id;
         $guest_checkout_id = !empty($order->customer->id) ? $this->order->id : null;
         $customer_translator = new CustomerGPCustomerTranslator($this->order->customer, $guest_checkout_id);
         $this->gp_customer = $customer_translator->translate();
@@ -39,7 +41,7 @@ class OrderGPOrderTranslator {
      * @return array
      */
     public function translate(): array {
-        $this->gp_order['ORDNO'] = $this->order_id_to_gp_order_number((string) $this->order->id);
+        $this->gp_order['ORDNO'] = $this->order_id_to_gp_order_number((string) $this->order->id, $this->store_id);
         $this->gp_order['BATCHID'] = $this->batch_id();
         $this->gp_order['GPCUSTID'] = $this->gp_customer['GPCUSTID'];
         $this->gp_order['ORDDATE'] = !empty($this->order->date) ? $this->order->date->format('m/d/Y') : date('m/d/Y');
@@ -126,6 +128,7 @@ class OrderGPOrderTranslator {
             'FedEx (FedEx Standard Overnight)' => 'FED-X/STD/PPA',
             'UPS® (UPS 2nd Day Air®)' => 'UPS/2 DAY/PPA',
             'UPS® (UPS® Ground)' => 'UPS/GND/PPA',
+            'UPS® (UPS Standard℠)' => 'UPS/STD/PPA',
             'UPS® (UPS Next Day Air®)' => 'UPS/NEXTDAY/PPA',
             'UPS® (UPS Worldwide Expedited®)' => 'UPSINTLWEXP/PPA',
             'UPS® (UPS Worldwide Saver®)' => 'UPSINTLWSAV/PPA',
