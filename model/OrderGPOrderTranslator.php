@@ -128,7 +128,7 @@ class OrderGPOrderTranslator {
             'FedEx (FedEx Standard Overnight)' => 'FED-X/STD/PPA',
             'UPS® (UPS 2nd Day Air®)' => 'UPS/2 DAY/PPA',
             'UPS® (UPS® Ground)' => 'UPS/GND/PPA',
-            'UPS® (UPS Standard℠)' => 'UPS/STD/PPA',
+            'UPS® (UPS Standard℠)' => 'UPSINTLSTD/PPA',
             'UPS® (UPS Next Day Air®)' => 'UPS/NEXTDAY/PPA',
             'UPS® (UPS Worldwide Expedited®)' => 'UPSINTLWEXP/PPA',
             'UPS® (UPS Worldwide Saver®)' => 'UPSINTLWSAV/PPA',
