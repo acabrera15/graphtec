@@ -5,7 +5,7 @@ class BigCommerceRestApiClient {
 
     // private constants
     private const CURL_TIMEOUT = 30;
-    private const VERBOSE_LOGGING = true;
+    private const VERBOSE_LOGGING = false;
     private const VERBOSE_STATUS_CODE_RESPONSES = [
         400,
         422,
