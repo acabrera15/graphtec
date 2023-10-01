@@ -14,12 +14,14 @@ class InventoryUpdater {
     private GpInterfaceClient           $gp_client;
     private array                       $product_sku_map = [];
     private array                       $product_variant_sku_map = [];
+    private bool                        $verbose_logging;
     // end private members
 
     // public functions
-    public function __construct(BigCommerceRestApiClient $bc_client, GpInterfaceClient $gp_client){
+    public function __construct(BigCommerceRestApiClient $bc_client, GpInterfaceClient $gp_client, bool $verbose_logging = false){
         $this->bc_client = $bc_client;
         $this->gp_client = $gp_client;
+        $this->verbose_logging = $verbose_logging;
     }
 
     /**
@@ -28,10 +30,16 @@ class InventoryUpdater {
      */
     public function update_inventory(): void {
         $this->build_product_sku_map();
+        if ($this->verbose_logging){
+            $this->write_to_log(self::LOG, "Product SKU map: \n" . print_r($this->product_sku_map, true));
+        }
 
         // unique SKUs
         $unique_skus = array_merge(array_keys($this->product_sku_map), array_keys($this->product_variant_sku_map));
         $inventory = $this->gp_client->query_inventory(GP_SITE_ID, $unique_skus);
+        if ($this->verbose_logging){
+            $this->write_to_log(self::LOG, "Results from GP: \n" . print_r($inventory, true));
+        }
         while (!empty($inventory)){
             $batch = [];
             foreach ($inventory as $key => $item){
