@@ -36,7 +36,7 @@ if (
         $credentials->endpoint = GP_ENDPOINT_ORDER;
         $credentials->password = GP_PASSWORD;
         $credentials->user_id = GP_USER_ID;
-        $gp = new GpInterfaceClient($credentials, $bc_config->store_id);
+        $gp = new GpInterfaceClient($credentials, $bc_config->store_id, producer_to_gp_price_level($request_arr['producer']));
         $gp->submit_order($order);
         write_to_webhook_log("Status Code: 200 (success)\n");
     } catch (Exception $e){
@@ -69,6 +69,13 @@ function producer_to_bc_config(string $producer): BigCommerceApiCredentialsConfi
     }
 
     return $config;
+}
+
+function producer_to_gp_price_level(string $producer): string {
+    return match ($producer) {
+        'stores/' . BIGCOMMERCE_STORE_ID_INSTRUMENTS => 'LIST',
+        default => 'DEALER',
+    };
 }
 
 function send_api_error(RestApiResponse $response, mixed $order_id): void

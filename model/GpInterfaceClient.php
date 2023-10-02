@@ -24,6 +24,7 @@ class GpInterfaceClient {
     private SoapClient              $client;
     private SoapCredentialsConfig   $config;
     private string                  $message = '';
+    private string                  $price_level;
     private string                  $store_id;
     // end private members
 
@@ -34,10 +35,11 @@ class GpInterfaceClient {
     /**
      * @throws SoapFault
      */
-    public function __construct(SoapCredentialsConfig $config, string $store_id){
+    public function __construct(SoapCredentialsConfig $config, string $store_id, string $price_level = self::DEFAULT_PRCLEVEL){
         $this->config = $config;
         $this->init_client();
         $this->store_id = $store_id;
+        $this->price_level = $price_level;
     }
 
     /**
@@ -127,7 +129,7 @@ class GpInterfaceClient {
                 'ITEM' => [
                     'SITEID' => $site_id,
                     'ITMNMBR' => $item_number,
-                    'PRCLEVEL' => self::DEFAULT_PRCLEVEL
+                    'PRCLEVEL' => $this->price_level
                 ]
             ];
         }
