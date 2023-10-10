@@ -3,6 +3,8 @@ session_start();
 require_once('../app.php');
 $error_msg = '';
 $success_msg = '';
+print_r($_POST);
+exit();
 const PASSWORD = 'uKAtKMgGeHsSysUc';
 if (!empty($_POST['password'])){
     if ($_POST['password'] === PASSWORD){
@@ -81,12 +83,12 @@ if (!empty($_POST['order_number']) && !empty($_POST['store_id'])){
                             </select>
                         </div>
                         <div class="mb-3">
-                            <label for="order-number" class="form-label">Order #</label>
+                            <label for="order-number" class="form-label">BigCommerce Order #</label>
                             <input
                                     class="form-control"
                                     id="order-number"
                                     name="order_number"
-                                    pattern="[0-9]+"
+                                    placeholder="12345"
                                     type="text"
                                     value=""
                             />
