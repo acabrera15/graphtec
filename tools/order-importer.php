@@ -7,6 +7,8 @@ const PASSWORD = 'uKAtKMgGeHsSysUc';
 if (!empty($_POST['password'])){
     if ($_POST['password'] === PASSWORD){
         $_SESSION['logged_in'] = true;
+        header('Location: https://' . $_SERVER['SERVER_NAME'] . '?logged_in=1');
+        exit();
     } else {
         $error_msg = 'Invalid password';
     }
