@@ -3,8 +3,6 @@ session_start();
 require_once('../app.php');
 $error_msg = '';
 $success_msg = '';
-print_r($_POST);
-exit();
 const PASSWORD = 'uKAtKMgGeHsSysUc';
 if (!empty($_POST['password'])){
     if ($_POST['password'] === PASSWORD){
@@ -37,7 +35,7 @@ if (!empty($_POST['order_number']) && !empty($_POST['store_id'])){
             $error_msg = 'Unknown store selected';
     }
 
-    if (!empty($error_msg)){
+    if (empty($error_msg)){
         try {
             $translator = new BigCommerceOrderIDOrderTranslator((string) $_POST['order_number'], $config);
             $order = $translator->translate();
