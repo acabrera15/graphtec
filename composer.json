@@ -4,6 +4,7 @@
       "ext-simplexml": "*",
       "ext-soap": "*",
       "ext-curl": "*",
-      "ext-zlib": "*"
+      "ext-zlib": "*",
+      "ext-pdo": "*"
     }
 }

@@ -31,6 +31,14 @@ if (
             exit('This order status is not ready to import into GP');
         }
 
+        // check if it's already been inserted to avoid sending it a duplicate time
+        $connection = new PDO('mysql:dbname=' . DB_NAME . ';host=' . DB_HOST . ';port=' . DB_PORT, DB_USER, DB_PASSWORD);
+        if (order_in_gp($connection, $order, $bc_config)){
+            http_response_code(200);
+            write_to_webhook_log("Status Code: 200 (order already in GP)\n");
+            exit('This order has already been inserted into GP. No need to send it again.');
+        }
+
         // connect to the GP Web Interface and attempt to send over the order
         $credentials = new SoapCredentialsConfig();
         $credentials->endpoint = GP_ENDPOINT_ORDER;
@@ -38,7 +46,10 @@ if (
         $credentials->user_id = GP_USER_ID;
         $gp = new GpInterfaceClient($credentials, $bc_config->store_id, producer_to_gp_price_level($request_arr['producer']));
         $gp->submit_order($order);
-        write_to_webhook_log("Status Code: 200 (success)\n");
+        write_to_webhook_log("Status Code: 200 (success)");
+        if (insert_order_into_gp($connection, $order, $bc_config)){
+            write_to_webhook_log("\tInserted into DB for record-keeping\n");
+        }
     } catch (Exception $e){
         http_response_code(500);
         echo "EXCEPTION: {$e->getMessage()}\n";
@@ -50,6 +61,34 @@ if (
 } else {
     http_response_code(400); // bad client request; no JSON involved
     write_to_webhook_log("Status Code: 400 (missing required data)\n");
+}
+
+function insert_order_into_gp(PDO $connection, Order $order, BigCommerceApiCredentialsConfig $bc_config): bool {
+    $gp_order_number = order_to_gp_order_number($order, $bc_config);
+    $sql = $connection->prepare("
+        INSERT INTO bigcommerce_gp_order_xref (store_hash, bc_order_id, gp_order_id) 
+        VALUES (?, ?, ?)
+    ");
+    return $sql->execute([$order->id, $gp_order_number, $bc_config->store_id]);
+}
+
+function order_to_gp_order_number(Order $order, BigCommerceApiCredentialsConfig $bc_config): string {
+    $order_translator = new OrderGPOrderTranslator($order, $bc_config->store_id);
+    $gp_order = $order_translator->translate();
+    return $gp_order['ORDNO'];
+}
+
+function order_in_gp(PDO $connection, Order $order, BigCommerceApiCredentialsConfig $bc_config): bool {
+    $gp_order_number = order_to_gp_order_number($order, $bc_config);
+    $sql = $connection->prepare("
+        SELECT * 
+        FROM bigcommerce_gp_order_xref 
+        WHERE bc_order_id = ? AND gp_order_id = ? AND store_hash = ?
+    ");
+    $sql->execute([$order->id, $gp_order_number, $bc_config->store_id]);
+    $row = $sql->fetch();
+
+    return !empty($row);
 }
 
 function producer_to_bc_config(string $producer): BigCommerceApiCredentialsConfig {
