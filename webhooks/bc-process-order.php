@@ -66,10 +66,10 @@ if (
 function insert_order_into_gp(PDO $connection, Order $order, BigCommerceApiCredentialsConfig $bc_config): bool {
     $gp_order_number = order_to_gp_order_number($order, $bc_config);
     $sql = $connection->prepare("
-        INSERT INTO bigcommerce_gp_order_xref (store_hash, bc_order_id, gp_order_id) 
+        INSERT IGNORE INTO bigcommerce_gp_order_xref (store_hash, bc_order_id, gp_order_id) 
         VALUES (?, ?, ?)
     ");
-    return $sql->execute([$order->id, $gp_order_number, $bc_config->store_id]);
+    return $sql->execute([$bc_config->store_id, $order->id, $gp_order_number ]);
 }
 
 function order_to_gp_order_number(Order $order, BigCommerceApiCredentialsConfig $bc_config): string {
