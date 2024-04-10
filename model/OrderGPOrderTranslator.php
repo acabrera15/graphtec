@@ -15,6 +15,14 @@ class OrderGPOrderTranslator {
     private const DEFAULT_PAYMENT_TERM = 'CREDIT CARD';
     private const DEFAULT_PAYMENT_TYPE = 'CREDIT_CARD';
     private const GP_SHIP_METHOD_BEST = 'BEST/PPA';
+    private const ITEM_OPTION_REQUIRING_SPLIT_ISO17025_ACCREDITED = 'ISO-17025 Accredited Calibration';
+    private const ITEM_OPTION_REQUIRING_SPLIT_CALIBRATION = 'NIST Traceable Calibration Certificate';
+    private const ITEM_OPTION_REQUIRING_SPLIT_CALIBRATION_WITH_DATA = 'NIST Traceable Calibration Certificate with Data';
+    private const ITEM_OPTIONS_REQUIRING_SPLIT = [
+        self::ITEM_OPTION_REQUIRING_SPLIT_ISO17025_ACCREDITED,
+        self::ITEM_OPTION_REQUIRING_SPLIT_CALIBRATION,
+        self::ITEM_OPTION_REQUIRING_SPLIT_CALIBRATION_WITH_DATA,
+    ];
     private const PO_NUM_PREFIX = 'ECOM-';
     private const SHIP_METHOD_UPS_READY = 'upsready';
     // end private constants
@@ -79,15 +87,34 @@ class OrderGPOrderTranslator {
     // private functions
     private function add_details(): void {
         foreach ($this->order->items as $item){
-            $this->gp_order['DETAILS'][] = ['DETAIL' => [
-                'ORDNO' => $this->gp_order['ORDNO'],
-                'ITMNO' => $item->sku,
-                'UNITPRC' => $this->format_currency_value($item->unit_price, $this->order->currency_code),
-                'QTY' => $item->quantity,
-                'BAKORDQTY' => $item->backorder_quantity,
-                'EXTPRC' => $this->format_currency_value($item->unit_price * $item->quantity, $this->order->currency_code)
-            ]];
+            $split_item_option_val = $this->split_item_option_val($item);
+            if (empty($split_item_option_val)){
+                $this->add_details_for_single_item($item);
+            } else {
+                $this->add_details_for_split_item($item, $split_item_option_val);
+            }
         }
+    }
+
+    private function add_details_for_single_item(OrderItem $item): void {
+        $this->gp_order['DETAILS'][] = ['DETAIL' => [
+            'ORDNO' => $this->gp_order['ORDNO'],
+            'ITMNO' => $item->sku,
+            'UNITPRC' => $this->format_currency_value($item->unit_price, $this->order->currency_code),
+            'QTY' => $item->quantity,
+            'BAKORDQTY' => $item->backorder_quantity,
+            'EXTPRC' => $this->format_currency_value($item->unit_price * $item->quantity, $this->order->currency_code)
+        ]];
+    }
+
+    private function add_details_for_split_item(OrderItem $item, string $option_val): void {
+        $sku = $this->sku_to_add_for_split_item($item->sku, $option_val);
+        if (empty($sku)){
+            $this->add_details_for_single_item($item);
+            return;
+        }
+
+        // TODO: implement the logic to add the two items, possibly with a price split
     }
 
     private function add_payments(): void {
@@ -115,6 +142,10 @@ class OrderGPOrderTranslator {
     }
 
     private function format_shipping_method(): string {
+        if (empty($this->order->shipping_address)){
+            return self::GP_SHIP_METHOD_BEST;
+        }
+
         return match ($this->order->shipping_address->shipping_method) {
             'FedEx (2 Day)' => 'FEDX 2DAY/PPA',
             'FedEx (FedEx 2 Day)' => 'FEDX 2DAY/PPA',
@@ -176,6 +207,44 @@ class OrderGPOrderTranslator {
         }
 
         return $notes;
+    }
+
+    private function sku_to_add_for_split_item(string $sku, string $option_val): string|null {
+        switch ($option_val){
+            case self::ITEM_OPTION_REQUIRING_SPLIT_CALIBRATION:
+                return 'NIST CALIBRATION';
+            case self::ITEM_OPTION_REQUIRING_SPLIT_CALIBRATION_WITH_DATA:
+                return 'NIST CALIBRATION WITH DATA';
+            case self::ITEM_OPTION_REQUIRING_SPLIT_ISO17025_ACCREDITED:
+                switch ($sku){
+                    case 'GL2000':
+                    case 'GL980':
+                        return 'ISO17025-GL980/GL2000';
+                    case 'GL240':
+                        return 'ISO17025-GL240';
+                    case 'GL840-M':
+                        return 'ISO17025-GL840-M';
+                    case 'GL840-WV':
+                        return 'ISO17025-GL840-WV';
+                }
+                break;
+        }
+
+        return null;
+    }
+
+    private function split_item_option_val(OrderItem $item): string|null {
+        if (empty($item->options)){
+            return null;
+        }
+
+        foreach ($item->options as $option){
+            if (in_array($option->value, self::ITEM_OPTIONS_REQUIRING_SPLIT)){
+                return $option->value;
+            }
+        }
+
+        return null;
     }
 
     private function translated_card_type(): string {

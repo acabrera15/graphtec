@@ -1,6 +1,10 @@
 <?php
 class OrderItem {
     public int              $backorder_quantity = 0;
+    /**
+     * @var OrderProductOption[]
+     */
+    public array            $options = [];
     public int|null|string  $product_id = null;
     public int              $quantity = 1;
     public ?string          $sku = null;

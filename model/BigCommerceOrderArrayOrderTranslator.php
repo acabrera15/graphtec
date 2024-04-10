@@ -121,6 +121,12 @@ class BigCommerceOrderArrayOrderTranslator {
             $item->quantity = $product_arr['quantity'];
             $item->sku = trim($product_arr['sku']);
             $item->unit_price = $product_arr['base_price'];
+            if (!empty($product_arr['product_options'])){
+                foreach ($product_arr['product_options'] as $option){
+                    $option = new OrderProductOption($option['id'], $option['option_id'], $option['display_value']);
+                    $item->options[] = $option;
+                }
+            }
 
             $this->order->items[] = $item;
         }

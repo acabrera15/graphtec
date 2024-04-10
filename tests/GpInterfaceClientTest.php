@@ -8,12 +8,13 @@ class GpInterfaceClientTest extends Testcase {
 
     // private constants
     private const VALID_SKUS = [
+        'GL240' => 1095
         //'792600850' => 45,
-        'ST0118' => 45,
-        '0190-80982' => 45/*,
-        'PHP33-CB15N-HS' => 105,
-        'PHP35-CB15-HS' => 138,
-        'PHP35-CB09N-HS' => 138,
+        //'ST0118' => 45,
+        //'0190-80982' => 45/*,
+        //'PHP33-CB15N-HS' => 105,
+        //'PHP35-CB15-HS' => 138,
+        //'PHP35-CB09N-HS' => 138,
         //'CUT-MAT-12LT-3T' => 14.99*/
     ];
     // end private constants
