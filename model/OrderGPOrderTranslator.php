@@ -25,12 +25,20 @@ class OrderGPOrderTranslator {
     ];
     private const PO_NUM_PREFIX = 'ECOM-';
     private const SHIP_METHOD_UPS_READY = 'upsready';
+    private const SPLIT_ITEM_SKUS = [
+        'GL2000',
+        'GL240',
+        'GL840-M',
+        'GL840-WV',
+        'GL980'
+    ];
     // end private constants
 
     // private members
     private Order   $order;
     private array   $gp_customer;
     private array   $gp_order = [];
+    private array   $split_item_default_prices = [];
     private string  $store_id;
     // end private members
 
@@ -108,13 +116,35 @@ class OrderGPOrderTranslator {
     }
 
     private function add_details_for_split_item(OrderItem $item, string $option_val): void {
-        $sku = $this->sku_to_add_for_split_item($item->sku, $option_val);
-        if (empty($sku)){
+        $add_on_sku = $this->sku_to_add_for_split_item($item->sku, $option_val);
+        if (empty($add_on_sku)){
             $this->add_details_for_single_item($item);
             return;
         }
 
-        // TODO: implement the logic to add the two items, possibly with a price split
+        $this->load_split_item_default_prices();
+
+        $base_item_unit_price = $this->split_item_default_prices[$item->sku] ?? $item->unit_price;
+        $add_on_item_unit_price = $item->unit_price - $base_item_unit_price;
+        if ($add_on_item_unit_price < 0.000001){
+            $add_on_item_unit_price = 0.00;
+        }
+        $this->gp_order['DETAILS'][] = ['DETAIL' => [
+            'ORDNO' => $this->gp_order['ORDNO'],
+            'ITMNO' => $item->sku,
+            'UNITPRC' => $this->format_currency_value($base_item_unit_price, $this->order->currency_code),
+            'QTY' => $item->quantity,
+            'BAKORDQTY' => $item->backorder_quantity,
+            'EXTPRC' => $this->format_currency_value($base_item_unit_price * $item->quantity, $this->order->currency_code)
+        ]];
+        $this->gp_order['DETAILS'][] = ['DETAIL' => [
+            'ORDNO' => $this->gp_order['ORDNO'],
+            'ITMNO' => $add_on_sku,
+            'UNITPRC' => $this->format_currency_value($add_on_item_unit_price, $this->order->currency_code),
+            'QTY' => $item->quantity,
+            'BAKORDQTY' => $item->backorder_quantity,
+            'EXTPRC' => $this->format_currency_value($add_on_item_unit_price * $item->quantity, $this->order->currency_code)
+        ]];
     }
 
     private function add_payments(): void {
@@ -197,6 +227,24 @@ class OrderGPOrderTranslator {
                 'WI', 'WISCONSIN' => 'WEB-WI',
                 default => 'WEB-CA',
             };
+        }
+    }
+
+    private function load_split_item_default_prices(): void {
+        if (empty($this->split_item_default_prices)){
+            $bc_config = new BigCommerceApiCredentialsConfig();
+            $bc_config->access_token = BIGCOMMERCE_API_INSTR_ACCESS_TOKEN;
+            $bc_config->client_id = BIGCOMMERCE_API_INSTR_CLIENT_ID;
+            $bc_config->client_secret = BIGCOMMERCE_API_INSTR_CLIENT_SECRET;
+            $bc_config->store_id = BIGCOMMERCE_STORE_ID_INSTRUMENTS;
+            $bc_client = new BigCommerceRestApiClient($bc_config, 'catalog/products');
+            $response = $bc_client->get(['sku:in' => implode(',', self::SPLIT_ITEM_SKUS)]);
+            $response_data = (array) json_decode($response->body, true);
+            if (!empty($response_data['data']) && is_array($response_data['data'])){
+                foreach ($response_data['data'] as $product){
+                    $this->split_item_default_prices[$product['sku']] = $product['price'];
+                }
+            }
         }
     }
 

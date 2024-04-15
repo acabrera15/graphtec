@@ -12,11 +12,22 @@ print_r($api_client->get([])->body);*/
 
 $api_client = new BigCommerceRestApiClient($config, 'orders/1338/products');
 
-$translator = new BigCommerceOrderIDOrderTranslator(1338, $config);
-print_r($translator->translate());
-exit();
+$translator = new BigCommerceOrderIDOrderTranslator(1430, $config);
+$order = $translator->translate();
+//$gp_order_translator = new OrderGPOrderTranslator($order, $config->store_id);
+//print_r($gp_order_translator->translate());
 
-//print_r($api_client->get([]));
+$credentials = new SoapCredentialsConfig();
+$credentials->endpoint = GP_ENDPOINT_ORDER;
+$credentials->password = GP_PASSWORD;
+$credentials->user_id = GP_USER_ID;
+$gp = new GpInterfaceClient($credentials, $config->store_id, 'LIST');
+$gp->submit_order($order);
+echo "order submitted!\n";
+
+
+exit();
+print_r($api_client->get([]));
 exit();
 
 $api_client = new BigCommerceRestApiClient($config, 'shipping/zones');
