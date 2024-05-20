@@ -90,13 +90,12 @@ class InventoryUpdater {
                 }
 
                 foreach ($response_arr['data'] as $item){
-                    if (!empty($item['sku'])){
-                        if (empty($item['inventory_tracking']) || $item['inventory_tracking'] !== self::BC_INVENTORY_TRACKING_VARIANT){
+                    if ($item['inventory_tracking'] === self::BC_INVENTORY_TRACKING_VARIANT){
+                        // we need to look up the variants
+                        $variant_ids[$item['sku']] = $item['id'];
+                    } else {
+                        if (!empty($item['sku'])){
                             $this->product_sku_map[$item['sku']] = $item['id'];
-                        } else {
-
-                            // we need to look up the variants
-                            $variant_ids[$item['sku']] = $item['id'];
                         }
                     }
                 }
