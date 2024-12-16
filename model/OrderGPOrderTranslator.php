@@ -28,6 +28,7 @@ class OrderGPOrderTranslator {
     private const SPLIT_ITEM_SKUS = [
         'GL2000',
         'GL240',
+        'GL260',
         'GL840-M',
         'GL840-WV',
         'GL980'
@@ -270,6 +271,8 @@ class OrderGPOrderTranslator {
                         return 'ISO17025-GL980/GL2000';
                     case 'GL240':
                         return 'ISO17025-GL240';
+                    case 'GL260':
+                        return 'ISO17025-GL260';
                     case 'GL840-M':
                         return 'ISO17025-GL840-M';
                     case 'GL840-WV':
