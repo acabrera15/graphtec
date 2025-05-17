@@ -8,7 +8,6 @@ $gp_credentials->endpoint = GP_ENDPOINT_INQUIRY;
 $gp_credentials->password = GP_PASSWORD;
 $gp_credentials->user_id = GP_USER_ID;
 
-
 // main store
 $bc_config = new BigCommerceApiCredentialsConfig();
 $bc_config->access_token = BIGCOMMERCE_API_ACCESS_TOKEN;

@@ -12,6 +12,7 @@ const IMPORT_STATUS_IDS = [
 
 $request = file_get_contents("php://input");
 $request_arr = json_decode($request, true);
+
 if (
     is_array($request_arr)
     && !empty($request_arr['data'])
@@ -25,6 +26,8 @@ if (
         $bc_config = producer_to_bc_config($request_arr['producer']);
         $translator = new BigCommerceOrderIDOrderTranslator((string) $request_arr['data']['id'], $bc_config);
         $order = $translator->translate();
+
+        // if not correct status error
         if (!in_array($order->status_id, IMPORT_STATUS_IDS)){
             http_response_code(200);
             write_to_webhook_log("Status Code: 200 (not ready for import with status id {$order->status_id})\n");
